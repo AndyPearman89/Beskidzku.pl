@@ -35,6 +35,10 @@ public/
   # Statyczne zasoby
 ```
 
+## Specyfikacja systemu
+
+Kanoniczny opis produktu i architektury znajduje się w pliku `public/system-specyfikacja.txt` (dostępny pod `/system-specyfikacja.txt` po uruchomieniu aplikacji).
+
 ## Zmienne środowiskowe
 
 ```env
