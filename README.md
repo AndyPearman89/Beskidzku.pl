@@ -20,26 +20,32 @@ npm run dev
 
 ```
 app/
-  layout.tsx        # Root layout
-  page.tsx          # Strona główna
+  layout.tsx           # Root layout (nagłówek, stopka, meta)
+  page.tsx             # Strona główna z kategoriami i miastami
+  globals.css          # Style globalne (Tailwind)
   listings/
-    page.tsx        # Katalog firm
+    page.tsx           # Strona katalogu firm z filtrowaniem
   api/
     listings/
-      route.ts      # CRUD API dla listings
+      route.ts         # GET/POST dla kolekcji listings
+      [id]/
+        route.ts       # GET/PUT/DELETE dla pojedynczego listing
 core/
   api/
-    listings.ts     # Logika biznesowa
-    listingAccess.ts # Autoryzacja
+    listings.ts        # Logika biznesowa i walidacja
+    listingAccess.ts   # Autoryzacja zapisu (klucz admin)
 public/
-  # Statyczne zasoby
+  # Statyczne zasoby (katalog jeszcze nie utworzony)
 ```
 
 ## Zmienne środowiskowe
 
+Skopiuj `.env.example` do `.env.local` i uzupełnij wartości:
+
 ```env
 LISTINGS_ADMIN_KEY=<wygenerowany_klucz>
 NEXT_PUBLIC_SITE_URL=https://beskidzku.pl
+NEXT_PUBLIC_SITE_NAME=Beskidzku.pl
 ```
 
 ## Wdrożenie
