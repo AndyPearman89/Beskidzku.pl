@@ -1,0 +1,226 @@
+BESKIDZKU.PL — SYSTEM SPECYFIKACJI (KANONICZNY TXT)
+
+1. OVERVIEW
+Beskidzku.pl to regionalna platforma turystyczno-biznesowa działająca jako:
+- portal SEO (programmatic content)
+- marketplace lokalnych usług
+- silnik lead generation
+- warstwa SaaS dla firm (wizytówki + monetyzacja)
+
+System jest oparty o WordPress + PearTree Core i działa jako modularny monolit z możliwością skalowania na kolejne regiony.
+
+2. CORE CEL
+Zbudowanie dominującego źródła:
+- ruchu organicznego (SEO)
+- danych lokalnych (noclegi, atrakcje, firmy)
+- leadów sprzedażowych
+
+Model: TRAFFIC → INTENT → LEAD → REVENUE
+
+3. STRUKTURA PORTALU
+Główne sekcje:
+- Regiony
+- Miejscowości
+- Noclegi
+- Atrakcje
+- Szlaki
+- Firmy
+- Jeziora
+- Pogoda
+
+Każda sekcja oparta o CPT + ACF + relacje między obiektami.
+
+Relacje:
+- miejscowość → region
+- nocleg → miejscowość
+- atrakcja → miejscowość
+- szlak → region/miejscowość
+- firma → lokalizacja
+
+4. ARCHITEKTURA TECHNICZNA
+Stack:
+- WordPress Multisite
+- PearTree Core (DDD architecture)
+- GeneratePress Child Theme
+- ACF (Advanced Custom Fields)
+- Leaflet (mapy)
+- AJAX + REST API
+
+Struktura:
+- modularny monolit
+- src/Domain / Application / Infrastructure / UI
+- FeatureGate (pakiety)
+- Tenant-aware (multisite ready)
+
+5. MODEL DANYCH (CPT)
+CPT:
+- region
+- miejscowosc
+- nocleg
+- atrakcja
+- szlak
+- firma
+- jezioro
+- pogoda
+- lead
+
+ACF pola:
+- lat / lng
+- adres
+- udogodnienia
+- galeria
+- opis
+- status pakietu
+
+6. MAP ENGINE
+Funkcjonalność:
+- mapa Leaflet
+- markery (FREE / PREMIUM / PREMIUM+)
+- clustering
+- filtry (typ, lokalizacja, udogodnienia)
+- UX mobile-first
+
+Logika:
+- 1 marker FREE na centrum miejscowości
+- PREMIUM / PREMIUM+ → indywidualne pinezki
+- ranking wg pakietu
+
+7. LEAD ENGINE
+Mechanizm:
+- formularz kontaktowy przy wizytówce
+- maskowanie danych w FREE
+- wysyłka zapytania do właściciela
+- zapis do CPT lead
+
+Funkcje:
+- powiadomienia email
+- tracking leadów
+- integracja z upsell
+
+8. MODEL PAKIETÓW
+FREE:
+- brak widocznych danych kontaktowych
+- formularz kontaktowy
+- niski ranking
+
+PREMIUM:
+- pełne dane kontaktowe
+- lepsza widoczność
+- SEO boost
+
+PREMIUM+:
+- najwyższa pozycja
+- wyróżnienie na mapie
+- limit miejsc na lokalizację
+
+9. CLAIM ENGINE
+Proces:
+1. wizytówka dodana przez admina (seed)
+2. właściciel otrzymuje informację
+3. może przejąć wizytówkę
+4. weryfikacja (token/email)
+5. upsell do PREMIUM
+
+Funkcje:
+- claim listing
+- automatyczne powiadomienia
+- anti-fraud
+
+10. SEEDING STRATEGY
+- ręczne dodanie baz danych
+- import z Google (opcjonalnie)
+- initial data coverage
+
+Cel: osiągnięcie efektu „pełnego portalu” od startu
+
+11. PLANNER (MODUŁ KLUCZOWY)
+Cel: narzędzie do planowania wycieczek → konwersja użytkownika
+
+Funkcje:
+- wybór atrakcji / noclegów / szlaków
+- budowa trasy
+- obliczanie dystansu (Haversine)
+- kolejność punktów (sorting / drag&drop)
+- mapa (Leaflet)
+
+Eksport:
+- Google Maps
+- zapis planu (future)
+
+Monetyzacja:
+- promowane punkty (PREMIUM+)
+- CTA → lead
+- gotowe trasy (SEO pages)
+
+12. WEATHER ENGINE
+- API Open-Meteo
+- cache (transients)
+- prognoza current + daily
+- integracja z lokalizacją (lat/lng)
+
+Rozszerzenia:
+- dynamiczny hero (weather-aware)
+- sugestie planner
+
+13. UX / UI
+Założenia:
+- mobile-first
+- szybkie filtrowanie
+- proste decyzje użytkownika
+
+Elementy:
+- mapa + lista
+- sticky CTA
+- dark mode (opcjonalnie)
+
+14. SEO ENGINE
+Strategia:
+- programmatic SEO (miejscowości + frazy)
+- landing pages:
+  - „noclegi + lokalizacja”
+  - „atrakcje + lokalizacja”
+  - „co robić + lokalizacja”
+
+Content:
+- blog (po.beskidzku.pl)
+- poradniki
+- rankingi
+
+15. MONETYZACJA
+Źródła:
+- abonamenty (FREE / PREMIUM / PREMIUM+)
+- lead generation
+- artykuły sponsorowane
+- afiliacja (np. booking)
+- sponsorowane listingi
+
+16. ROADMAP MVP
+Etap 1:
+- baza danych (noclegi + atrakcje)
+- mapa
+- wizytówki
+
+Etap 2:
+- lead engine
+- pakiety
+
+Etap 3:
+- planner
+- SEO content
+
+Etap 4:
+- skalowanie regionów
+
+17. KLUCZOWE METRYKI
+- liczba wizytówek
+- liczba leadów
+- konwersja FREE → PREMIUM
+- ruch SEO
+- CTR na mapie
+
+18. DEFINICJA PRODUKTU
+Beskidzku.pl to:
+
+lokalny system generowania ruchu i leadów
+oparty o dane, mapy i intencję użytkownika,
+z monetyzacją w modelu abonamentowym i leadowym.
