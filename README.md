@@ -48,6 +48,24 @@ NEXT_PUBLIC_SITE_URL=https://beskidzku.pl
 NEXT_PUBLIC_SITE_NAME=Beskidzku.pl
 ```
 
+## API
+
+### Endpointy
+
+**GET /api/listings** — Pobierz listę firm
+Query params: `q` (wyszukiwanie), `type` (kategoria), `town` (miejscowość)
+
+**POST /api/listings** — Dodaj nową firmę
+Wymaga nagłówka: `X-Admin-Key: <LISTINGS_ADMIN_KEY>`
+
+**GET /api/listings/[id]** — Pobierz szczegóły firmy
+
+**PUT /api/listings/[id]** — Aktualizuj firmę
+Wymaga nagłówka: `X-Admin-Key: <LISTINGS_ADMIN_KEY>`
+
+**DELETE /api/listings/[id]** — Usuń firmę
+Wymaga nagłówka: `X-Admin-Key: <LISTINGS_ADMIN_KEY>`
+
 ## Wdrożenie
 
 ```bash
