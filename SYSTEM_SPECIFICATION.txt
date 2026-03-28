@@ -1,0 +1,763 @@
+================================================================================
+BESKIDZKU.PL — SYSTEM SPECIFICATION (CANONICAL)
+================================================================================
+Version: 1.0
+Last Updated: 2026-03-27
+Status: Active
+================================================================================
+
+1. OVERVIEW
+================================================================================
+
+Beskidzku.pl is a regional tourism and business platform serving the Beskidy
+mountain region in Poland, operating as:
+
+- SEO-driven content portal (programmatic content generation)
+- Local services marketplace (listings, accommodations, attractions)
+- Lead generation engine (business inquiries and conversions)
+- SaaS layer for businesses (business profiles + monetization)
+
+The system is built as a modular application with scalability to additional
+regions.
+
+CORE BUSINESS MODEL:
+TRAFFIC → INTENT → LEAD → REVENUE
+
+================================================================================
+2. STRATEGIC OBJECTIVES
+================================================================================
+
+Build a dominant source of:
+- Organic traffic (SEO)
+- Local data (accommodations, attractions, businesses)
+- Sales leads (inquiries, conversions)
+
+Success metrics:
+- Number of business listings
+- Number of leads generated
+- Conversion rate (FREE → PREMIUM)
+- Organic search traffic
+- Map click-through rate (CTR)
+
+================================================================================
+3. PORTAL STRUCTURE
+================================================================================
+
+MAIN SECTIONS:
+- Regions (Regiony)
+- Towns (Miejscowości)
+- Accommodations (Noclegi)
+- Attractions (Atrakcje)
+- Trails (Szlaki)
+- Businesses (Firmy)
+- Lakes (Jeziora)
+- Weather (Pogoda)
+
+Each section is based on Custom Post Types (CPT) with Advanced Custom Fields
+(ACF) and inter-object relationships.
+
+RELATIONSHIPS:
+- Town → Region
+- Accommodation → Town
+- Attraction → Town
+- Trail → Region/Town
+- Business → Location
+
+================================================================================
+4. TECHNICAL ARCHITECTURE
+================================================================================
+
+CURRENT STACK:
+- Next.js 16 (App Router, standalone output)
+- TypeScript 5
+- Tailwind CSS 4
+- Leaflet (OSM maps)
+- React 19
+
+ARCHITECTURE PATTERN:
+- Modular monolith
+- Domain-Driven Design (DDD) structure
+- Feature packages (FeatureGate)
+- Tenant-aware (multisite ready)
+
+DIRECTORY STRUCTURE:
+app/                    # Next.js App Router pages
+  layout.tsx           # Root layout
+  page.tsx             # Homepage
+  listings/            # Business listings catalog
+  api/                 # API routes
+    listings/          # CRUD API
+core/                  # Business logic layer
+  api/                 # Core API services
+    listings.ts        # Listing business logic
+    listingAccess.ts   # Authorization logic
+public/                # Static assets
+
+PLANNED STRUCTURE (DDD):
+src/
+  Domain/              # Domain models and business rules
+  Application/         # Use cases and application services
+  Infrastructure/      # External services and persistence
+  UI/                  # User interface components
+
+================================================================================
+5. DATA MODEL
+================================================================================
+
+CORE ENTITIES (CPT):
+
+region
+- name
+- slug
+- description
+- lat/lng (center point)
+- boundaries (polygon)
+
+miejscowosc (town)
+- name
+- slug
+- region_id
+- lat/lng
+- population
+- description
+- image_gallery
+
+nocleg (accommodation)
+- title
+- type (hotel, hostel, apartment, camping)
+- town_id
+- lat/lng
+- address
+- description
+- amenities (array)
+- gallery (images)
+- contact (phone, email, website)
+- package_level (FREE, PREMIUM, PREMIUM+)
+- owner_id
+
+atrakcja (attraction)
+- title
+- type (museum, park, monument, activity)
+- town_id
+- lat/lng
+- address
+- description
+- gallery
+- contact
+- package_level
+
+szlak (trail)
+- title
+- difficulty (easy, moderate, hard)
+- distance (km)
+- duration (hours)
+- region_ids (array)
+- town_ids (array)
+- points (array of lat/lng)
+- description
+- elevation_gain
+- gallery
+
+firma (business)
+- title
+- category
+- location (lat/lng/address)
+- contact
+- description
+- package_level
+
+jezioro (lake)
+- name
+- town_id
+- lat/lng
+- area (hectares)
+- depth
+- amenities
+- description
+
+pogoda (weather)
+- location_id
+- date
+- temperature
+- conditions
+- forecast (JSON)
+
+lead
+- listing_id
+- name
+- email
+- phone
+- message
+- created_at
+- status (new, contacted, converted)
+
+================================================================================
+6. MAP ENGINE
+================================================================================
+
+TECHNOLOGY:
+- Leaflet.js
+- OpenStreetMap tiles
+- Marker clustering (leaflet.markercluster)
+
+FEATURES:
+- Interactive map with custom markers
+- Clustering for performance
+- Filtering by type, location, amenities
+- Mobile-first UX
+
+MARKER LOGIC:
+- FREE: 1 marker at town center (shared location)
+- PREMIUM: Individual marker at exact location
+- PREMIUM+: Individual marker with enhanced icon/styling
+
+MARKER HIERARCHY:
+1. PREMIUM+ (highest priority, special icon)
+2. PREMIUM (medium priority, standard icon)
+3. FREE (lowest priority, generic icon)
+
+MAP INTERACTIONS:
+- Click marker → show listing preview
+- Filter by category
+- Search by location
+- Distance calculation (Haversine formula)
+
+================================================================================
+7. LEAD GENERATION ENGINE
+================================================================================
+
+MECHANISM:
+1. Contact form on business profile
+2. Data masking for FREE listings (contact hidden)
+3. Lead submission to business owner
+4. Lead saved to CPT 'lead'
+
+FEATURES:
+- Email notifications to business owner
+- Lead tracking dashboard
+- Conversion tracking
+- Upsell prompts (FREE → PREMIUM)
+
+WORKFLOW:
+User views listing → Clicks contact → Fills form → Lead sent to owner
+→ Lead saved in system → Owner notified → Upsell opportunity
+
+ANTI-SPAM:
+- Rate limiting
+- CAPTCHA integration (optional)
+- Email verification
+- Honeypot fields
+
+================================================================================
+8. PACKAGE MODEL (MONETIZATION)
+================================================================================
+
+FREE TIER:
+- Listing visible in directory
+- Contact details masked
+- Contact via lead form only
+- Low ranking in search
+- Shared map marker (town center)
+- Basic description (limited characters)
+
+PREMIUM TIER:
+- Full contact details visible (phone, email, website)
+- Individual map marker at exact location
+- Higher ranking in search and map
+- SEO boost (better indexing)
+- Extended description
+- Photo gallery (more images)
+- Social media links
+
+PREMIUM+ TIER:
+- Highest position in listings
+- Featured marker on map (special icon/color)
+- Homepage carousel placement
+- Priority in search results
+- Unlimited photos
+- Video embedding
+- Analytics dashboard
+- Limited slots per location (scarcity)
+
+PRICING (INDICATIVE):
+- FREE: 0 PLN/month
+- PREMIUM: 99 PLN/month or 990 PLN/year
+- PREMIUM+: 249 PLN/month or 2490 PLN/year
+
+================================================================================
+9. CLAIM ENGINE
+================================================================================
+
+PROCESS:
+1. Admin seeds listings (initial data)
+2. Business owner discovers their listing
+3. Owner claims listing via "Claim this business" button
+4. Verification via email token
+5. Owner gains access to edit listing
+6. Upsell flow to PREMIUM/PREMIUM+
+
+VERIFICATION METHODS:
+- Email verification (token link)
+- Phone verification (SMS code)
+- Document upload (business registration)
+
+ANTI-FRAUD MEASURES:
+- Email domain matching (business email)
+- Manual review for high-value claims
+- Rate limiting on claim attempts
+- Duplicate claim detection
+
+OWNER DASHBOARD:
+- Edit listing details
+- View lead history
+- Upgrade package
+- Analytics (views, clicks, leads)
+
+================================================================================
+10. SEEDING STRATEGY
+================================================================================
+
+INITIAL DATA SOURCES:
+- Manual entry by admin team
+- Google Places import (with attribution)
+- Public databases (tourism offices)
+- User submissions (moderated)
+
+SEEDING PRIORITIES:
+1. Major towns (Szczyrk, Wisła, Żywiec, Bielsko-Biała)
+2. Top accommodations (hotels, resorts)
+3. Key attractions (museums, trails, monuments)
+4. Essential businesses (restaurants, shops)
+
+GOAL:
+Achieve "complete portal" effect from launch day.
+Minimum viable coverage: 100+ listings per major town.
+
+DATA QUALITY:
+- Verified addresses and coordinates
+- Accurate contact information
+- Professional descriptions
+- High-quality photos
+
+================================================================================
+11. TRIP PLANNER MODULE (KEY FEATURE)
+================================================================================
+
+PURPOSE:
+Interactive tool for planning trips → drives user engagement → increases
+conversion rate.
+
+FEATURES:
+- Select attractions, accommodations, trails
+- Build custom route
+- Calculate distances (Haversine formula)
+- Reorder points (drag & drop)
+- Interactive map (Leaflet)
+- Save and share plans
+
+EXPORT OPTIONS:
+- Google Maps export (URL with waypoints)
+- PDF download (future)
+- Share via link (future)
+
+MONETIZATION:
+- Promoted points (PREMIUM+ listings highlighted)
+- Call-to-action buttons (contact business)
+- Pre-made routes (SEO landing pages)
+
+USER FLOW:
+1. User opens planner
+2. Searches for places to visit
+3. Adds items to itinerary
+4. Views route on map
+5. Adjusts order
+6. Exports to Google Maps or saves
+7. Contacts businesses for bookings
+
+TECHNICAL IMPLEMENTATION:
+- React component with state management
+- Leaflet for map rendering
+- Haversine distance calculation
+- Drag & drop library (react-beautiful-dnd or @dnd-kit)
+- Local storage for draft plans
+- API for saving plans (authenticated users)
+
+================================================================================
+12. WEATHER ENGINE
+================================================================================
+
+DATA SOURCE:
+- Open-Meteo API (free, no API key required)
+- Fallback: WeatherAPI.com
+
+CACHE STRATEGY:
+- WordPress transients (1-hour cache)
+- Next.js: Cache with revalidation (3600 seconds)
+
+FEATURES:
+- Current weather by location (lat/lng)
+- 7-day forecast
+- Temperature, precipitation, wind
+- Weather icons
+- Integration with location pages
+
+ENHANCEMENTS:
+- Dynamic hero section (weather-aware background)
+- Trip planner suggestions (weather-based)
+- Weather alerts (storms, snow)
+
+DISPLAY LOCATIONS:
+- Homepage hero
+- Town pages
+- Accommodation listings
+- Attraction pages
+
+================================================================================
+13. USER EXPERIENCE (UX/UI)
+================================================================================
+
+DESIGN PRINCIPLES:
+- Mobile-first (responsive design)
+- Fast filtering (instant search)
+- Clear user decisions (minimal friction)
+
+KEY UI ELEMENTS:
+- Sticky search bar
+- Filter sidebar (desktop) / drawer (mobile)
+- Map + list view toggle
+- Infinite scroll or pagination
+- Sticky CTA buttons (contact, book)
+- Dark mode (optional future feature)
+
+PERFORMANCE:
+- Lazy loading images
+- Virtual scrolling for long lists
+- Debounced search inputs
+- Optimistic UI updates
+- Skeleton loaders
+
+ACCESSIBILITY:
+- ARIA labels
+- Keyboard navigation
+- Screen reader support
+- High contrast mode
+- Focus indicators
+
+================================================================================
+14. SEO ENGINE
+================================================================================
+
+STRATEGY:
+Programmatic SEO (automated landing pages for long-tail keywords)
+
+LANDING PAGE TEMPLATES:
+- "Noclegi w [miejscowość]" (Accommodations in [town])
+- "Atrakcje w [miejscowość]" (Attractions in [town])
+- "Co robić w [miejscowość]" (Things to do in [town])
+- "[Typ nocleg] w [miejscowość]" (e.g., "Hotels in Szczyrk")
+- "Szlaki w [region]" (Trails in [region])
+
+CONTENT STRATEGY:
+- Blog subdomain: po.beskidzku.pl (articles, guides)
+- How-to guides (hiking tips, accommodation booking)
+- Destination guides (town overviews)
+- Seasonal content (winter sports, summer activities)
+- Rankings and comparisons
+
+ON-PAGE SEO:
+- Optimized meta titles and descriptions
+- Structured data (Schema.org: LocalBusiness, Place, Event)
+- Internal linking
+- Image alt text
+- URL structure (clean, keyword-rich)
+
+OFF-PAGE SEO:
+- Local citations (Google Business Profile, directories)
+- Backlink building
+- Social media presence
+- User-generated content (reviews, photos)
+
+TECHNICAL SEO:
+- Fast page load times (Next.js optimization)
+- Mobile-friendly (responsive)
+- XML sitemap (auto-generated)
+- Robots.txt
+- Canonical URLs
+- HTTPS
+
+================================================================================
+15. MONETIZATION STREAMS
+================================================================================
+
+PRIMARY:
+- Subscription packages (FREE, PREMIUM, PREMIUM+)
+- Lead generation fees (pay-per-lead model)
+
+SECONDARY:
+- Sponsored articles (blog posts)
+- Banner advertising (Google AdSense or direct)
+- Affiliate commissions (Booking.com, Airbnb)
+- Sponsored listings (featured placement)
+- Event promotion (festivals, concerts)
+
+PAYMENT INTEGRATION:
+- Stripe (credit card, BLIK)
+- PayU (Polish payment gateway)
+- Recurring billing for subscriptions
+- Invoice generation
+
+UPSELL TRIGGERS:
+- Lead received → upgrade prompt
+- Profile views threshold → visibility notification
+- Competitor upgrade → scarcity messaging
+- Seasonal promotions (summer, winter)
+
+================================================================================
+16. MVP ROADMAP
+================================================================================
+
+PHASE 1: FOUNDATION (Weeks 1-4)
+- Database schema (CPT setup)
+- Basic listings (accommodations + attractions)
+- Map integration (Leaflet)
+- Business profiles (FREE tier)
+- Search and filters
+
+PHASE 2: MONETIZATION (Weeks 5-8)
+- Lead engine (contact forms)
+- Package tiers (FREE, PREMIUM, PREMIUM+)
+- Claim engine (business verification)
+- Payment integration (Stripe/PayU)
+- Owner dashboard
+
+PHASE 3: ENGAGEMENT (Weeks 9-12)
+- Trip planner module
+- Weather integration
+- Blog/content section
+- SEO landing pages
+- User accounts (optional)
+
+PHASE 4: SCALING (Weeks 13+)
+- Additional regions
+- Mobile app (React Native, optional)
+- Advanced analytics
+- API for third parties
+- Premium features (videos, 360° photos)
+
+================================================================================
+17. KEY METRICS (KPIs)
+================================================================================
+
+TRAFFIC:
+- Monthly unique visitors
+- Pageviews
+- Bounce rate
+- Time on site
+- Pages per session
+
+ENGAGEMENT:
+- Map interactions (clicks, zooms)
+- Search queries
+- Filter usage
+- Trip planner usage
+- Social shares
+
+CONVERSION:
+- Leads generated (total, per listing)
+- Lead-to-contact conversion rate
+- FREE → PREMIUM upgrades
+- Revenue per user (RPU)
+
+CONTENT:
+- Number of listings (total, by category)
+- Listings with photos
+- Listings claimed by owners
+- User-submitted listings
+
+SEO:
+- Organic search traffic
+- Keyword rankings (top 10, top 3)
+- Backlinks
+- Domain authority
+
+================================================================================
+18. DATA PRIVACY & COMPLIANCE
+================================================================================
+
+GDPR COMPLIANCE:
+- Cookie consent banner
+- Privacy policy page
+- Terms of service
+- Data processing agreements
+- Right to be forgotten (user data deletion)
+- Data export (user downloads their data)
+
+DATA SECURITY:
+- HTTPS (SSL certificate)
+- Password hashing (bcrypt)
+- SQL injection prevention
+- XSS protection
+- CSRF tokens
+- Rate limiting
+- Regular backups
+
+USER DATA:
+- Minimal data collection
+- Explicit consent for marketing
+- Email unsubscribe option
+- Secure storage (encrypted sensitive data)
+
+================================================================================
+19. TECHNICAL DEPENDENCIES
+================================================================================
+
+CURRENT:
+- Next.js 16
+- TypeScript 5
+- Tailwind CSS 4
+- Leaflet 1.9.4
+- React 19
+- leaflet.markercluster
+
+PLANNED:
+- Database: PostgreSQL or MongoDB
+- ORM: Prisma or Mongoose
+- Authentication: NextAuth.js or Clerk
+- Email: SendGrid or AWS SES
+- File storage: AWS S3 or Cloudinary
+- Search: Algolia or Meilisearch
+- Analytics: Google Analytics 4, Plausible, or Umami
+- Monitoring: Sentry
+- CDN: Cloudflare or Vercel Edge
+
+================================================================================
+20. PRODUCT DEFINITION
+================================================================================
+
+Beskidzku.pl is a local traffic and lead generation system based on data,
+maps, and user intent, with monetization through subscription and lead-based
+revenue models.
+
+CORE VALUE PROPOSITIONS:
+
+For Users:
+- Comprehensive directory of local businesses and attractions
+- Easy discovery of places to visit
+- Trip planning tools
+- Up-to-date information
+- User reviews and ratings (future)
+
+For Businesses:
+- Online visibility
+- Lead generation
+- Customer inquiries
+- Analytics and insights
+- Low-cost marketing channel
+
+For the Platform:
+- Scalable revenue model
+- Network effects (more listings → more users → more value)
+- Data moat (proprietary local data)
+- SEO dominance (programmatic content)
+
+================================================================================
+21. COMPETITIVE ADVANTAGES
+================================================================================
+
+- Hyper-local focus (Beskidy region expertise)
+- Programmatic SEO (automated landing pages)
+- Lead generation built-in (not just directory)
+- Trip planner (unique engagement tool)
+- Freemium model (low barrier to entry)
+- Map-first UX (visual discovery)
+- Weather integration (contextual relevance)
+
+================================================================================
+22. FUTURE ENHANCEMENTS
+================================================================================
+
+SHORT-TERM (3-6 months):
+- User reviews and ratings
+- Photo uploads by users
+- Advanced search (natural language)
+- Email newsletters (targeted campaigns)
+- Mobile app (React Native)
+
+MEDIUM-TERM (6-12 months):
+- Multi-region expansion (Tatry, Karkonosze)
+- Events calendar (festivals, concerts)
+- Booking integration (direct reservations)
+- Chat support (live chat or chatbot)
+- Loyalty program (user rewards)
+
+LONG-TERM (12+ months):
+- AI recommendations (personalized suggestions)
+- Virtual tours (360° photos, VR)
+- Marketplace (products, souvenirs)
+- API for developers (third-party integrations)
+- White-label solution (other regions)
+
+================================================================================
+23. RISKS & MITIGATIONS
+================================================================================
+
+RISK: Low listing adoption by businesses
+MITIGATION: Admin seeding, proactive outreach, free tier
+
+RISK: Poor data quality
+MITIGATION: Verification process, user reports, manual review
+
+RISK: SEO competition (large directories)
+MITIGATION: Hyper-local focus, quality content, fast site
+
+RISK: Dependence on Google traffic
+MITIGATION: Diversify channels (social, direct, referral)
+
+RISK: Technical scalability
+MITIGATION: Modular architecture, caching, CDN, database optimization
+
+RISK: Payment fraud
+MITIGATION: Stripe fraud detection, manual review, KYC
+
+================================================================================
+24. DEVELOPMENT GUIDELINES
+================================================================================
+
+CODE STANDARDS:
+- TypeScript strict mode
+- ESLint + Prettier
+- Component-driven development
+- Atomic design principles
+- Test coverage (Jest, React Testing Library)
+
+GIT WORKFLOW:
+- Main branch (production)
+- Develop branch (staging)
+- Feature branches (feature/*)
+- Pull request reviews
+- Conventional commits
+
+DEPLOYMENT:
+- Vercel (recommended for Next.js)
+- Docker (alternative)
+- PM2 (Node.js process manager)
+- GitHub Actions (CI/CD)
+
+MONITORING:
+- Error tracking (Sentry)
+- Performance monitoring (Vercel Analytics)
+- Uptime monitoring (UptimeRobot)
+- Log aggregation (Datadog or CloudWatch)
+
+================================================================================
+
+END OF SYSTEM SPECIFICATION
+
+================================================================================
+This document serves as the canonical reference for the Beskidzku.pl platform.
+All development, design, and business decisions should align with this spec.
+
+For questions or clarifications, contact the product team.
+Last review: 2026-03-27
+Next review: 2026-06-27 (quarterly)
+================================================================================
