@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 
 export interface Listing {
   id: string;

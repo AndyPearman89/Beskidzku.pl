@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createListing, getListings } from "@/core/api/listings";
 import { hasListingsAdminAccess } from "@/core/api/listingAccess";
+import { checkRateLimit, getClientIp } from "@/core/api/rateLimiter";
+
+const MAX_FIELD_LENGTH = 1000;
+const MAX_TITLE_LENGTH = 200;
+const MAX_ADDRESS_LENGTH = 300;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -25,6 +30,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  if (!checkRateLimit(`post:listings:${ip}`, 20, 60_000)) {
+    return NextResponse.json({ error: "Too Many Requests" }, { status: 429 });
+  }
+
   if (!hasListingsAdminAccess(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -44,6 +54,13 @@ export async function POST(request: NextRequest) {
 
   if (!title || !type || !town) {
     return NextResponse.json({ error: "title, type and town are required" }, { status: 400 });
+  }
+
+  if (title.length > MAX_TITLE_LENGTH || type.length > MAX_FIELD_LENGTH || town.length > MAX_FIELD_LENGTH) {
+    return NextResponse.json({ error: "Field value too long" }, { status: 400 });
+  }
+  if (address.length > MAX_ADDRESS_LENGTH || description.length > MAX_FIELD_LENGTH) {
+    return NextResponse.json({ error: "Field value too long" }, { status: 400 });
   }
 
   const listing = createListing({
