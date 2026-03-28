@@ -1,5 +1,8 @@
 import { timingSafeEqual } from "crypto";
 
+/** Minimum acceptable byte length for the admin key. */
+const MIN_KEY_LENGTH = 32;
+
 /**
  * Returns true if the request carries a valid LISTINGS_ADMIN_KEY header.
  * Uses timing-safe comparison to prevent timing-based secret enumeration.
@@ -12,6 +15,7 @@ export function hasListingsAdminAccess(request: Request): boolean {
   const expected = process.env.LISTINGS_ADMIN_KEY;
 
   if (!provided || !expected) return false;
+  if (expected.length < MIN_KEY_LENGTH) return false;
   if (provided.length !== expected.length) return false;
 
   try {
