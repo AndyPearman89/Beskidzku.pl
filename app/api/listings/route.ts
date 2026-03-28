@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createListing, getListings } from "@/core/api/listings";
+import { createListing, getListings, type PackageLevel } from "@/core/api/listings";
 import { hasListingsAdminAccess } from "@/core/api/listingAccess";
 import { checkRateLimit, getClientIp } from "@/core/api/rateLimiter";
 
 const MAX_FIELD_LENGTH = 1000;
 const MAX_TITLE_LENGTH = 200;
 const MAX_ADDRESS_LENGTH = 300;
+const VALID_PACKAGE_LEVELS: PackageLevel[] = ["FREE", "PREMIUM", "PREMIUM+"];
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -31,7 +32,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
-  if (!checkRateLimit(`post:listings:${ip}`, 20, 60_000)) {
+  const allowed = checkRateLimit(`post:listings:${ip}`, 20, 60_000);
+  if (!allowed) {
     return NextResponse.json({ error: "Too Many Requests" }, { status: 429 });
   }
 
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
 
   let body: Record<string, unknown>;
   try {
-    body = await request.json();
+    body = await request.json() as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
@@ -51,6 +53,10 @@ export async function POST(request: NextRequest) {
   const town = typeof body.town === "string" ? body.town.trim() : "";
   const address = typeof body.address === "string" ? body.address.trim() : "";
   const description = typeof body.description === "string" ? body.description.trim() : "";
+  const packageLevel: PackageLevel =
+    typeof body.packageLevel === "string" && VALID_PACKAGE_LEVELS.includes(body.packageLevel as PackageLevel)
+      ? (body.packageLevel as PackageLevel)
+      : "FREE";
 
   if (!title || !type || !town) {
     return NextResponse.json({ error: "title, type and town are required" }, { status: 400 });
@@ -75,6 +81,8 @@ export async function POST(request: NextRequest) {
     phone: typeof body.phone === "string" ? body.phone.trim() : undefined,
     website: typeof body.website === "string" ? body.website.trim() : undefined,
     email: typeof body.email === "string" ? body.email.trim() : undefined,
+    amenities: Array.isArray(body.amenities) ? (body.amenities as string[]).filter((a) => typeof a === "string") : undefined,
+    packageLevel,
     ownerId: typeof body.ownerId === "string" ? body.ownerId.trim() : undefined,
   });
 
