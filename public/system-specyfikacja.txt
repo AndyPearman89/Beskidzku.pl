@@ -224,3 +224,70 @@ Beskidzku.pl to:
 lokalny system generowania ruchu i leadów
 oparty o dane, mapy i intencję użytkownika,
 z monetyzacją w modelu abonamentowym i leadowym.
+
+19. FRONTPAGE (KANONICZNY TXT v3.0 — FINAL UI + CONVERSION FLOW)
+Cel:
+- wejście do plannera i narzędzie decyzji
+- generator leadów i rezerwacji
+
+Model: WEJŚCIE → PLAN → WYBÓR → LEAD / BOOKING
+
+HERO (PRIMARY ENTRY)
+- nagłówek: „Zaplanuj Beskidy w 30 sekund”
+- formularz: gdzie? / kiedy? / z kim?
+- szybkie opcje: z dziećmi, trekking, chill, aktywnie
+- CTA: GENERUJ PLAN → przekierowanie do plannera z parametrami
+
+QUICK START (PREDEFINED ENTRY)
+- skrócenie decyzji: weekend w Beskidach, dla rodzin, najlepsze szlaki, jeziora
+- klik = planner z preloadem
+
+MAPA + LISTA (DISCOVERY ENGINE)
+- desktop: [LISTA] | [MAPA]; mobile: [MAPA] + bottom sheet LISTA
+- funkcje: filtrowanie (noclegi, atrakcje, szlaki), sortowanie (popularność, odległość), interakcje (hover, klik)
+- markery: FREE neutralne, PREMIUM czerwone, PREMIUM+ wyróżnione
+
+PLANNER (CORE MODULE)
+- lista punktów: parking, atrakcje, szlaki, noclegi
+- dane: dystans, czas, profil wysokości
+- CTA: ZAREZERWUJ / ZAPYTAJ
+
+NOCLEGI (MONETIZATION BLOCK)
+- elementy: zdjęcie, nazwa, lokalizacja, rating, badge (PREMIUM)
+- CTA: „Zobacz” / „Zapytaj”
+- logika: FREE → formularz, PREMIUM → kontakt, PREMIUM+ → boost
+
+WEATHER BLOCK
+- zawartość: aktualna temperatura + alert pogodowy (np. „21°C — dobre warunki”; „Możliwe burze po południu”)
+- akcja: zmiana planu
+
+PARKING MODULE
+- dane: lokalizacja, liczba miejsc (jeśli dostępne), typ (darmowy/płatny)
+- CTA: „Nawiguj”
+
+GOTOWE PLANY (SEO BLOCK)
+- sekcje: 1 dzień w Beskidach, weekend dla par, dla rodzin, top atrakcje
+- klik = planner preload
+
+ADSENSE (SECONDARY MONETIZATION)
+- placement: między sekcjami i pod listami
+- zasady: nie zakłóca UX, niższy priorytet niż lead/booking
+
+FINAL CTA (CONVERSION PUSH)
+- treść: „Nie trać czasu — zaplanuj teraz”
+- przyciski: Zaplanuj / Znajdź nocleg
+
+MOBILE UX
+- elementy: bottom navigation, duże CTA, szybki dostęp do plannera
+- zasada: wszystkie akcje w zasięgu kciuka
+
+USER FLOW
+1. wejście na stronę
+2. interakcja z hero
+3. przejście do plannera
+4. wybór punktów
+5. decyzja
+6. lead / booking
+
+DEFINICJA FRONTU
+Frontpage Beskidzku to interfejs startowy systemu planowania, który prowadzi użytkownika od inspiracji do działania.
