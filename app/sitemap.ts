@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getPeaks } from "@/core/api/peaks";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://beskidzku.pl";
 
@@ -21,6 +22,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${BASE_URL}/szczyty`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
       url: `${BASE_URL}/planner`,
       lastModified: now,
       changeFrequency: "weekly",
@@ -41,5 +48,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.85,
   }));
 
-  return [...staticPages, ...townPages];
+  const { items: peaks } = getPeaks();
+  const peakPages: MetadataRoute.Sitemap = peaks.map((peak) => ({
+    url: `${BASE_URL}/szczyt/${peak.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...townPages, ...peakPages];
 }

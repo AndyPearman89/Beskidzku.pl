@@ -46,6 +46,9 @@ export default function RootLayout({
               <a href="/listings?type=attraction" className="text-[var(--color-muted)] hover:text-[var(--color-primary)] transition-colors">
                 Atrakcje
               </a>
+              <a href="/szczyty" className="text-[var(--color-muted)] hover:text-[var(--color-primary)] transition-colors">
+                Szczyty
+              </a>
               <a href="/listings" className="text-[var(--color-muted)] hover:text-[var(--color-primary)] transition-colors">
                 Katalog
               </a>
