@@ -40,7 +40,30 @@ public/
 
 ## Specyfikacja systemu
 
-Kanoniczny opis produktu i architektury znajduje się w pliku `public/system-specyfikacja.txt` (dostępny pod `/system-specyfikacja.txt` po uruchomieniu aplikacji).
+Kanoniczny opis produktu i architektury znajduje się w następujących plikach:
+
+- **`SYSTEM_SPECIFICATION.txt`** — pełna specyfikacja systemu (EN)
+- **`public/system-specyfikacja.txt`** — specyfikacja w języku polskim (dostępna pod `/system-specyfikacja.txt` po uruchomieniu aplikacji)
+- **`FRONTPAGE_V3_IMPLEMENTATION.md`** — szczegółowa checklista implementacji strony głównej v3.0 z analizą luk
+
+### Frontpage v3.0 (Issue #12)
+
+Strona główna została zaimplementowana zgodnie z Issue #12 i zawiera:
+
+- ✅ Hero z formularzem planowania (gdzie, kiedy, z kim)
+- ✅ Quick start — gotowe scenariusze wycieczek
+- ✅ Mapa + lista — discovery engine z filtrowaniem
+- ✅ Interaktywny planner z Haversine distance
+- ✅ Bloki noclegów z CTAs (Zobacz, Zapytaj)
+- ✅ Integracja pogody na żywo (Open-Meteo API)
+- ✅ Moduł parkingów
+- ✅ Gotowe plany (SEO landing pages)
+- ✅ Final CTA (konwersja)
+- ⏳ Bottom sheet mobile (pending)
+- ⏳ Różnicowanie markerów według pakietu (pending)
+- ⏳ AdSense (pending)
+
+Szczegóły: zobacz `FRONTPAGE_V3_IMPLEMENTATION.md`
 
 ## Zmienne środowiskowe
 

@@ -608,7 +608,254 @@ USER DATA:
 - Secure storage (encrypted sensitive data)
 
 ================================================================================
-19. TECHNICAL DEPENDENCIES
+19. FRONTPAGE SPECIFICATION v3.0 — CONVERSION OPTIMIZED UI
+================================================================================
+
+PURPOSE:
+The frontpage is the primary entry point and conversion funnel, guiding users
+from inspiration to booking/lead through an optimized flow:
+
+WEJŚCIE → PLAN → WYBÓR → LEAD / BOOKING
+
+CORE SECTIONS:
+
+1. HERO (PRIMARY ENTRY)
+   Goal: Immediate planning initiation
+
+   Content:
+   - Header: "Zaplanuj Beskidy w 30 sekund"
+   - Form with three input fields:
+     * gdzie? (location selector)
+     * kiedy? (date/timeframe picker)
+     * z kim? (group type dropdown)
+
+   Quick options (one-click filters):
+   - 👨‍👩‍👧‍👦 z dziećmi (family-friendly)
+   - 🥾 trekking (hiking trails)
+   - 🧘 chill (relaxation)
+   - 🚴 aktywnie (active/sports)
+
+   CTA Button: "GENERUJ PLAN"
+   Behavior: Redirects to /planner with query parameters
+
+   Implementation: app/page.tsx:107-232
+
+2. QUICK START (PREDEFINED ENTRY)
+   Goal: Reduce decision friction with ready-to-use scenarios
+
+   Preset cards:
+   - "Weekend w Beskidach" (2 days · top routes + accommodation)
+   - "Dla rodzin" (easy trails + kid attractions)
+   - "Najlepsze szlaki" (scenic + parking info)
+   - "Jeziora" (lakes, beaches, water activities)
+
+   Behavior: Single click → planner with preloaded configuration
+
+   Implementation: app/page.tsx:234-260
+
+3. MAPA + LISTA (DISCOVERY ENGINE)
+   Goal: Visual discovery with instant filtering
+
+   Desktop Layout:
+   [ LISTA ] | [ MAPA ]
+
+   Mobile Layout:
+   [ MAPA ]
+   [ bottom sheet → LISTA ]
+
+   Features:
+   - Real-time filtering: noclegi, atrakcje, szlaki
+   - Sorting options: popularność, odległość
+   - Interactive markers: hover = highlight, click = details popup
+
+   Marker Hierarchy (package-based differentiation):
+   - FREE tier → neutral gray markers (shared location)
+   - PREMIUM → red markers (exact location)
+   - PREMIUM+ → enhanced markers with special styling and priority
+
+   Implementation: app/page.tsx:262-366, app/components/ListingsMap.tsx
+   Status: Marker differentiation pending implementation
+
+4. PLANNER MODULE (CORE FEATURE)
+   Goal: Interactive trip planning with monetization touchpoints
+
+   Content Structure:
+   - Parking start point with capacity info
+   - Trail/route waypoints
+   - Attraction stops
+   - Accommodation recommendations
+
+   Displayed Metrics:
+   - Total distance (km) using Haversine formula
+   - Estimated duration (hours)
+   - Elevation profile (+meters) — pending implementation
+
+   Primary CTAs:
+   - "ZAREZERWUJ" (direct booking)
+   - "ZAPYTAJ" (lead form for inquiry)
+
+   Export Options:
+   - Google Maps integration (multi-point route export)
+   - Local storage for draft plans
+   - Share link (future feature)
+
+   Implementation: app/page.tsx:368-457, app/planner/page.tsx
+
+5. NOCLEGI BLOCK (PRIMARY MONETIZATION)
+   Goal: Drive accommodation bookings and leads
+
+   Card Elements:
+   - High-quality photo
+   - Business name
+   - Location (town)
+   - Star rating (0-10 scale)
+   - Package badge (FREE/PREMIUM/PREMIUM+)
+   - Price display or "kontakt" for FREE tier
+
+   Dual CTAs:
+   - "Zobacz" (view full listing details)
+   - "Zapytaj" (open lead form)
+
+   Tiered Logic:
+   - FREE → contact details masked, lead form required
+   - PREMIUM → full contact visible, direct booking links
+   - PREMIUM+ → top position in results, featured styling
+
+   Implementation: app/page.tsx:422-454, app/listings/[id]/page.tsx
+
+6. WEATHER BLOCK
+   Goal: Contextual trip planning assistance
+
+   Real-time Data:
+   - Current temperature (°C)
+   - Weather status indicator
+   - Condition-based alerts
+
+   Status Examples:
+   - "21°C — dobre warunki"
+   - "Możliwe burze po południu"
+   - "Śnieg na szlakach — sprawdź warunki przed wyjazdem"
+
+   Data Source: Open-Meteo API (free, no API key)
+   Caching: 1-hour revalidation (Next.js ISR)
+
+   Action: Informs user decisions on timing and route selection
+
+   Implementation: app/page.tsx:64-96, 459-507
+
+7. PARKING MODULE
+   Goal: Practical value and logistics support
+
+   Information Per Parking:
+   - Location name and address
+   - Total capacity (number of spots)
+   - Type designation (darmowy/płatny)
+   - Distance to trailhead or attraction
+
+   CTA: "Dodaj do planu" → adds parking as first waypoint
+
+   Implementation: app/page.tsx:43-46, 486-505
+
+8. GOTOWE PLANY (SEO + QUICK START)
+   Goal: SEO landing pages for long-tail keywords + instant planning
+
+   Pre-made Route Sections:
+   - "1 dzień w Beskidach" (parking → trail → attraction → meal)
+   - "Weekend dla par" (scenic views + SPA + romantic dinner)
+   - "Dla rodzin" (easy trails + playgrounds + safe lakes)
+   - "Top atrakcje [Region]" (curated highlights by location)
+
+   Behavior: Click → planner with preset waypoints and suggestions
+   SEO Value: Programmatic landing pages for "[activity] + [location]"
+
+   Implementation: app/page.tsx:509-540
+
+9. ADSENSE INTEGRATION (SECONDARY REVENUE)
+   Goal: Non-intrusive ad monetization
+
+   Placement Strategy:
+   - Between content sections (not in hero)
+   - Below listing blocks
+   - Native styling to match site design
+
+   Rules:
+   - Non-disruptive to user experience
+   - Lower priority than lead/booking CTAs
+   - Responsive sizing
+
+   Status: Not yet implemented (requires Google AdSense account)
+
+10. FINAL CTA (LAST CONVERSION OPPORTUNITY)
+    Goal: Re-engage users before page exit
+
+    Copy: "Nie trać czasu — zaplanuj teraz"
+
+    Dual CTA Buttons:
+    - Primary: "Zaplanuj" → /planner
+    - Secondary: "Znajdź nocleg" → /listings?type=hotel
+
+    Design: High-contrast red background with large white text
+    Placement: Bottom of page, above footer
+
+    Implementation: app/page.tsx:565-592
+
+11. MOBILE UX PRINCIPLES
+    Goal: Thumb-optimized mobile experience
+
+    Key Elements:
+    - Bottom navigation bar (sticky) — pending
+    - Large touch targets (min 44x44px)
+    - Floating quick-access planner button — pending
+    - Single-column layout on small screens
+
+    Principle: All primary actions within comfortable thumb reach
+
+    Implementation: Responsive design via Tailwind breakpoints
+    Status: Partial — navigation and floating button pending
+
+12. CONVERSION FUNNEL (USER FLOW)
+
+    Step-by-step Journey:
+    1. User lands on frontpage (organic search / direct)
+    2. Engages with hero form or quick start preset
+    3. Redirected to /planner with context
+    4. Adds/adjusts trip waypoints interactively
+    5. Views accommodation suggestions
+    6. Evaluates options (price, location, amenities)
+    7. Completes action:
+       → Submits lead form (FREE tier), or
+       → Proceeds to booking (PREMIUM tier)
+
+    Success Metrics:
+    - Hero form completion rate
+    - Planner engagement time
+    - Lead form submission rate
+    - Click-through to accommodations
+    - Bounce rate from frontpage
+
+    Implementation: End-to-end flow across multiple pages
+
+IMPLEMENTATION STATUS (as of 2026-04-01):
+- ✅ Hero with form and quick options
+- ✅ Quick start preset cards
+- ✅ Map + list discovery view
+- ✅ Interactive planner module
+- ✅ Accommodation listing blocks
+- ✅ Weather integration (Open-Meteo API)
+- ✅ Parking information cards
+- ✅ Pre-made plans section
+- ✅ Final conversion CTA
+- ✅ Mobile-responsive layouts
+- ⏳ Mobile bottom sheet for list (pending)
+- ⏳ Marker differentiation by tier (pending)
+- ⏳ AdSense integration (pending)
+- ⏳ Elevation profile charts (pending)
+
+For detailed implementation checklist and gap analysis, see:
+FRONTPAGE_V3_IMPLEMENTATION.md
+
+================================================================================
+20. TECHNICAL DEPENDENCIES
 ================================================================================
 
 CURRENT:
@@ -631,7 +878,7 @@ PLANNED:
 - CDN: Cloudflare or Vercel Edge
 
 ================================================================================
-20. PRODUCT DEFINITION
+21. PRODUCT DEFINITION
 ================================================================================
 
 Beskidzku.pl is a local traffic and lead generation system based on data,
