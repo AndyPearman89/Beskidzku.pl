@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getListings } from "@/core/api/listings";
+import { createOrganizationSchema, renderJsonLd } from "@/core/seo/schemas";
 
 export const metadata: Metadata = {
   title: "Beskidzku.pl — Planner Beskidów",
@@ -96,12 +97,32 @@ async function fetchWeather(): Promise<WeatherData> {
 }
 
 export default async function HomePage() {
-  const [featuredListings, weather] = await Promise.all([
-    Promise.resolve(getListings({ perPage: 4 }).items),
+  const [featuredResult, weather] = await Promise.all([
+    getListings({ perPage: 4 }),
     fetchWeather(),
   ]);
 
+  const featuredListings = featuredResult.items;
+
+  // Generate Organization schema
+  const organizationSchema = createOrganizationSchema({
+    name: "Beskidzku.pl",
+    url: "https://beskidzku.pl",
+    description: "Planner Beskidów — zaplanuj wycieczkę w 30 sekund. Noclegi, szczyty, atrakcje i gotowe plany wycieczek.",
+    logo: "https://beskidzku.pl/logo.png",
+    sameAs: [
+      // Add social media links when available
+    ],
+  });
+
   return (
+    <>
+      {/* JSON-LD Organization Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: renderJsonLd(organizationSchema) }}
+      />
+
     <div className="bg-[var(--color-bg)] text-[var(--color-text)]">
       {/* Hero / planner entry */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 lg:pt-16 pb-12">
@@ -591,5 +612,6 @@ export default async function HomePage() {
         </div>
       </section>
     </div>
+    </>
   );
 }
