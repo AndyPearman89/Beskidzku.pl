@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PackageLevel {
+  FREE
+  PREMIUM
+  PREMIUM_PLUS @map("PREMIUM+")
+}
+
+enum PeakDifficulty {
+  easy
+  moderate
+  hard
+  very_hard
+}
+
+model Listing {
+  id           String       @id @default(cuid())
+  title        String
+  type         String
+  category     String
+  town         String
+  lat          Float?
+  lng          Float?
+  address      String
+  description  String       @db.Text
+  phone        String?
+  website      String?
+  email        String?
+  amenities    String[]
+  packageLevel PackageLevel @default(FREE)
+  ownerId      String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([type])
+  @@index([category])
+  @@index([town])
+  @@index([packageLevel])
+  @@map("listings")
+}
+
+model Peak {
+  id           String         @id @default(cuid())
+  name         String
+  slug         String         @unique
+  lat          Float
+  lng          Float
+  elevation    Int
+  range        String
+  difficulty   PeakDifficulty
+  hiking_time  Int            // in minutes
+  parking_lat  Float?
+  parking_lng  Float?
+  viewpoints   String[]
+  description  String?        @db.Text
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([slug])
+  @@index([range])
+  @@index([difficulty])
+  @@index([elevation])
+  @@map("peaks")
+}
