@@ -12,8 +12,8 @@ import { generateAttractionIntro } from "@/core/seo/content";
 type Params = { slug: string };
 
 // Helper function to convert slug to listing title (approximate match)
-function findListingBySlug(slug: string) {
-  const { items } = getListings({ perPage: 100 });
+async function findListingBySlug(slug: string) {
+  const { items } = await getListings({ perPage: 100 });
 
   // Try to find a listing that matches the slug
   // This is a simplified implementation - in production, you'd want a proper slug field in the database
@@ -27,7 +27,7 @@ function findListingBySlug(slug: string) {
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
-  const listing = findListingBySlug(slug);
+  const listing = await findListingBySlug(slug);
 
   if (!listing) return {};
 
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export async function generateStaticParams() {
-  const { items } = getListings({ type: "attraction", perPage: 100 });
+  const { items } = await getListings({ type: "attraction", perPage: 100 });
 
   // Generate slugs from listing titles
   return items.map((listing) => ({
@@ -51,12 +51,12 @@ export async function generateStaticParams() {
 
 export default async function AttractionDetailPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const listing = findListingBySlug(slug);
+  const listing = await findListingBySlug(slug);
 
   if (!listing) notFound();
 
   // Get related attractions in the same town
-  const { items: related } = getListings({
+  const { items: related } = await getListings({
     type: "attraction",
     town: listing.town,
     perPage: 3

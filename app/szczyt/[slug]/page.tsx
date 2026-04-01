@@ -20,8 +20,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export async function generateStaticParams() {
-  const peaks = getPeaks({});
-  return peaks.map((peak) => ({
+  const peaksResult = getPeaks({});
+  return peaksResult.items.map((peak) => ({
     slug: peak.slug,
   }));
 }

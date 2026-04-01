@@ -43,7 +43,7 @@ export default async function ListingsPage({
   const page = Math.max(1, parseInt(pageStr, 10) || 1);
   const perPage = 12;
 
-  const { items: listings, total } = getListings({ q, type, town, page, perPage });
+  const { items: listings, total } = await getListings({ q, type, town, page, perPage });
   const totalPages = Math.max(1, Math.ceil(total / perPage));
 
   function pageUrl(p: number) {

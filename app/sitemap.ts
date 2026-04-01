@@ -20,7 +20,7 @@ const SAVED_PLANNERS = [
   "rodzinny-wypad-wisla",
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   // Static pages
@@ -66,8 +66,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Peak detail pages
-  const peaks = getPeaks({});
-  const peakPages: MetadataRoute.Sitemap = peaks.map((peak) => ({
+  const peaksResult = getPeaks({});
+  const peakPages: MetadataRoute.Sitemap = peaksResult.items.map((peak) => ({
     url: `${BASE_URL}/szczyt/${peak.slug}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
@@ -75,7 +75,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Attraction pages (from listings with type=attraction)
-  const { items: attractions } = getListings({ type: "attraction", perPage: 100 });
+  const { items: attractions } = await getListings({ type: "attraction", perPage: 100 });
   const attractionPages: MetadataRoute.Sitemap = attractions.map((attraction) => {
     const slug = attraction.title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
     return {
@@ -103,7 +103,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Listing pages (all listings)
-  const { items: listings } = getListings({ perPage: 100 });
+  const { items: listings } = await getListings({ perPage: 100 });
   const listingPages: MetadataRoute.Sitemap = listings.map((listing) => ({
     url: `${BASE_URL}/listings/${listing.id}`,
     lastModified: now,

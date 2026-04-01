@@ -74,7 +74,7 @@ export default async function TownPage({ params }: { params: Promise<Params> }) 
   const townData = TOWNS[town.toLowerCase()];
   if (!townData) notFound();
 
-  const { items: allListings, total } = getListings({ town: townData.name, perPage: 50 });
+  const { items: allListings, total } = await getListings({ town: townData.name, perPage: 50 });
 
   const hotels = allListings.filter((l) => l.type === "hotel");
   const attractions = allListings.filter((l) => l.type === "attraction");
@@ -296,7 +296,7 @@ export default async function TownPage({ params }: { params: Promise<Params> }) 
   );
 }
 
-function ListingCard({ listing }: { listing: ReturnType<typeof getListings>["items"][number] }) {
+function ListingCard({ listing }: { listing: Awaited<ReturnType<typeof getListings>>["items"][number] }) {
   const packageColors: Record<string, string> = {
     "PREMIUM+": "bg-[var(--color-primary-soft)] text-[var(--color-primary)] border border-[var(--color-primary)]",
     "PREMIUM": "bg-[var(--color-primary-soft)] text-[var(--color-primary)]",

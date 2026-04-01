@@ -13,17 +13,17 @@ type Params = { id: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { id } = await params;
-  const listing = getListing(id);
+  const listing = await getListing(id);
   if (!listing) return {};
   return generateListingMetadata(listing);
 }
 
 export default async function ListingDetailPage({ params }: { params: Promise<Params> }) {
   const { id } = await params;
-  const listing = getListing(id);
+  const listing = await getListing(id);
   if (!listing) notFound();
 
-  const { items: related } = getListings({ town: listing.town, perPage: 3 });
+  const { items: related } = await getListings({ town: listing.town, perPage: 3 });
   const relatedFiltered = related.filter((r) => r.id !== listing.id).slice(0, 3);
 
   const packageLabel: Record<string, string> = {

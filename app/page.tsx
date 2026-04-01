@@ -97,10 +97,12 @@ async function fetchWeather(): Promise<WeatherData> {
 }
 
 export default async function HomePage() {
-  const [featuredListings, weather] = await Promise.all([
-    Promise.resolve(getListings({ perPage: 4 }).items),
+  const [featuredResult, weather] = await Promise.all([
+    getListings({ perPage: 4 }),
     fetchWeather(),
   ]);
+
+  const featuredListings = featuredResult.items;
 
   // Generate Organization schema
   const organizationSchema = createOrganizationSchema({
