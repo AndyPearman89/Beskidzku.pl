@@ -11,7 +11,7 @@ const VALID_PACKAGE_LEVELS: PackageLevel[] = ["FREE", "PREMIUM", "PREMIUM+"];
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  const result = getListings({
+  const result = await getListings({
     type: searchParams.get("type") ?? undefined,
     town: searchParams.get("town") ?? undefined,
     q: searchParams.get("q") ?? undefined,
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Field value too long" }, { status: 400 });
   }
 
-  const listing = createListing({
+  const listing = await createListing({
     title,
     type,
     category: typeof body.category === "string" ? body.category.trim() : "",

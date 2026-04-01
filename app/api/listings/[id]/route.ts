@@ -14,7 +14,7 @@ interface RouteParams {
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  const listing = getListing(id);
+  const listing = await getListing(id);
 
   if (!listing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const listing = getListing(id);
+  const listing = await getListing(id);
   if (!listing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -76,7 +76,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Field value too long" }, { status: 400 });
   }
 
-  const updated = updateListing(id, {
+  const updated = await updateListing(id, {
     title,
     type,
     category,
@@ -105,7 +105,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const deleted = deleteListing(id);
+  const deleted = await deleteListing(id);
   if (!deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }

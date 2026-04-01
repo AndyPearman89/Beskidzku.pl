@@ -1,4 +1,6 @@
 
+import { listingsDb } from '@/core/db/adapters'
+
 export type PackageLevel = "FREE" | "PREMIUM" | "PREMIUM+";
 
 export interface Listing {
@@ -21,7 +23,10 @@ export interface Listing {
   updatedAt: string;
 }
 
-// Runtime in-memory store (resets on restart — use DB in production)
+// Check if we should use database or in-memory storage
+const USE_DATABASE = process.env.DATABASE_URL !== undefined
+
+// Runtime in-memory store (fallback when DATABASE_URL is not set)
 export const runtimeListingsStore = new Map<string, Listing>();
 
 // --- Seed demo data ---
@@ -173,13 +178,26 @@ function seedIfEmpty() {
 
 // --- CRUD helpers ---
 
-export function getListings(filters?: {
+export async function getListings(filters?: {
   type?: string;
   town?: string;
   q?: string;
   page?: number;
   perPage?: number;
-}): { items: Listing[]; total: number; page: number; perPage: number } {
+}): Promise<{ items: Listing[]; total: number; page: number; perPage: number }> {
+  if (USE_DATABASE) {
+    const page = filters?.page ?? 1
+    const perPage = filters?.perPage ?? 20
+
+    const [items, total] = await Promise.all([
+      listingsDb.findMany(filters),
+      listingsDb.count(filters),
+    ])
+
+    return { items, total, page, perPage }
+  }
+
+  // Fallback to in-memory store
   seedIfEmpty();
 
   let items = [...runtimeListingsStore.values()];
@@ -214,12 +232,22 @@ export function getListings(filters?: {
   return { items: items.slice(start, start + perPage), total, page, perPage };
 }
 
-export function getListing(id: string): Listing | null {
+export async function getListing(id: string): Promise<Listing | null> {
+  if (USE_DATABASE) {
+    return await listingsDb.findById(id)
+  }
+
+  // Fallback to in-memory store
   seedIfEmpty();
   return runtimeListingsStore.get(id) ?? null;
 }
 
-export function createListing(data: Omit<Listing, "id" | "createdAt" | "updatedAt">): Listing {
+export async function createListing(data: Omit<Listing, "id" | "createdAt" | "updatedAt">): Promise<Listing> {
+  if (USE_DATABASE) {
+    return await listingsDb.create(data)
+  }
+
+  // Fallback to in-memory store
   const now = new Date().toISOString();
   const id = `listing_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const listing: Listing = { ...data, id, createdAt: now, updatedAt: now };
@@ -227,7 +255,16 @@ export function createListing(data: Omit<Listing, "id" | "createdAt" | "updatedA
   return listing;
 }
 
-export function updateListing(id: string, data: Partial<Omit<Listing, "id" | "createdAt">>): Listing | null {
+export async function updateListing(id: string, data: Partial<Omit<Listing, "id" | "createdAt">>): Promise<Listing | null> {
+  if (USE_DATABASE) {
+    try {
+      return await listingsDb.update(id, data)
+    } catch (error) {
+      return null
+    }
+  }
+
+  // Fallback to in-memory store
   const existing = runtimeListingsStore.get(id);
   if (!existing) return null;
   const updated: Listing = { ...existing, ...data, id, updatedAt: new Date().toISOString() };
@@ -235,6 +272,16 @@ export function updateListing(id: string, data: Partial<Omit<Listing, "id" | "cr
   return updated;
 }
 
-export function deleteListing(id: string): boolean {
+export async function deleteListing(id: string): Promise<boolean> {
+  if (USE_DATABASE) {
+    try {
+      await listingsDb.delete(id)
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+
+  // Fallback to in-memory store
   return runtimeListingsStore.delete(id);
 }
