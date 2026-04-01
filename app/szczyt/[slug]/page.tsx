@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPeakBySlug, getNearbyPeaks } from "@/core/api/peaks";
+import { getPeakBySlug, getNearbyPeaks, getPeaks } from "@/core/api/peaks";
+import {
+  createMountainSchema,
+  createBreadcrumbSchema,
+  createFAQSchema,
+  renderJsonLd
+} from "@/core/seo/schemas";
+import { generatePeakMetadata } from "@/core/seo/metadata";
+import { generatePeakIntro, generatePeakFAQ } from "@/core/seo/content";
 
 type Params = { slug: string };
 
@@ -8,10 +16,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { slug } = await params;
   const peak = getPeakBySlug(slug);
   if (!peak) return {};
-  return {
-    title: `${peak.name} (${peak.elevation}m) — ${peak.range} · Beskidzku.pl`,
-    description: peak.description || `${peak.name} — szczyt w paśmie ${peak.range} o wysokości ${peak.elevation}m n.p.m.`,
-  };
+  return generatePeakMetadata(peak);
+}
+
+export async function generateStaticParams() {
+  const peaks = getPeaks({});
+  return peaks.map((peak) => ({
+    slug: peak.slug,
+  }));
 }
 
 export default async function PeakDetailPage({ params }: { params: Promise<Params> }) {
@@ -37,8 +49,44 @@ export default async function PeakDetailPage({ params }: { params: Promise<Param
 
   const hoursMinutes = Math.floor(peak.hiking_time / 60) + "h " + (peak.hiking_time % 60) + "min";
 
+  // Generate JSON-LD schemas
+  const mountainSchema = createMountainSchema({
+    name: peak.name,
+    description: peak.description || `Szczyt ${peak.name} w paśmie ${peak.range} o wysokości ${peak.elevation}m n.p.m.`,
+    latitude: peak.lat,
+    longitude: peak.lng,
+    elevation: peak.elevation,
+    url: `https://beskidzku.pl/szczyt/${peak.slug}`,
+  });
+
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: "Strona główna", url: "https://beskidzku.pl" },
+    { name: "Szczyty", url: "https://beskidzku.pl/szczyty" },
+    { name: peak.name, url: `https://beskidzku.pl/szczyt/${peak.slug}` },
+  ]);
+
+  const faqItems = generatePeakFAQ(peak);
+  const faqSchema = createFAQSchema(faqItems);
+
+  const seoIntro = generatePeakIntro(peak);
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <>
+      {/* JSON-LD Schemas */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: renderJsonLd(mountainSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: renderJsonLd(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: renderJsonLd(faqSchema) }}
+      />
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Breadcrumb */}
       <nav className="text-xs text-[var(--color-muted)] mb-6">
         <a href="/" className="hover:text-[var(--color-primary)]">Strona główna</a>
@@ -67,6 +115,11 @@ export default async function PeakDetailPage({ params }: { params: Promise<Param
 
             {peak.description && (
               <p className="text-[var(--color-text)] leading-relaxed mb-4">{peak.description}</p>
+            )}
+
+            {/* SEO intro */}
+            {!peak.description && (
+              <p className="text-[var(--color-text)] leading-relaxed mb-4">{seoIntro}</p>
             )}
 
             <div className="grid sm:grid-cols-2 gap-4 mt-4">
@@ -157,6 +210,21 @@ export default async function PeakDetailPage({ params }: { params: Promise<Param
               </div>
             </div>
           )}
+
+          {/* FAQ Section */}
+          {faqItems.length > 0 && (
+            <div className="bg-white rounded-2xl border border-[var(--color-border)] shadow-sm p-6 mt-6">
+              <h2 className="text-xl font-bold mb-4">Najczęściej zadawane pytania</h2>
+              <div className="space-y-4">
+                {faqItems.map((item, index) => (
+                  <div key={index} className="border-b border-[var(--color-border)] last:border-0 pb-4 last:pb-0">
+                    <h3 className="font-semibold text-sm mb-2">{item.question}</h3>
+                    <p className="text-sm text-[var(--color-muted)]">{item.answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -216,5 +284,6 @@ export default async function PeakDetailPage({ params }: { params: Promise<Param
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -2,6 +2,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getListings } from "@/core/api/listings";
 import DynamicMap from "@/app/components/DynamicMap";
+import {
+  createLocalBusinessSchema,
+  createBreadcrumbSchema,
+  createFAQSchema,
+  renderJsonLd
+} from "@/core/seo/schemas";
+import { generateTownMetadata } from "@/core/seo/metadata";
+import { generateLocationIntro, generateLocationFAQ } from "@/core/seo/content";
 
 // Known towns with their coordinates for weather
 const TOWNS: Record<string, { name: string; lat: number; lng: number; desc: string }> = {
@@ -50,22 +58,11 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const townData = TOWNS[town.toLowerCase()];
   if (!townData) return {};
 
-  return {
-    title: `Noclegi i atrakcje ${townData.name} — Beskidzku.pl`,
-    description: `Noclegi, restauracje i atrakcje w ${townData.name}. ${townData.desc}`,
-    keywords: [
-      `noclegi ${townData.name}`,
-      `atrakcje ${townData.name}`,
-      `co robić w ${townData.name}`,
-      `${townData.name} Beskidy`,
-    ],
-    openGraph: {
-      title: `${townData.name} — Noclegi i atrakcje — Beskidzku.pl`,
-      description: `Odkryj ${townData.name}: noclegi, restauracje i atrakcje w Beskidach.`,
-      locale: "pl_PL",
-      type: "website",
-    },
-  };
+  return generateTownMetadata({
+    name: townData.name,
+    description: townData.desc,
+    slug: town,
+  });
 }
 
 export function generateStaticParams() {
@@ -84,8 +81,53 @@ export default async function TownPage({ params }: { params: Promise<Params> }) 
   const restaurants = allListings.filter((l) => l.type === "restaurant");
   const other = allListings.filter((l) => !["hotel", "attraction", "restaurant"].includes(l.type));
 
+  // Generate JSON-LD schemas
+  const localBusinessSchema = createLocalBusinessSchema({
+    name: townData.name,
+    description: townData.desc,
+    url: `https://beskidzku.pl/region/${town}`,
+    addressLocality: townData.name,
+    latitude: townData.lat,
+    longitude: townData.lng,
+  });
+
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: "Strona główna", url: "https://beskidzku.pl" },
+    { name: townData.name, url: `https://beskidzku.pl/region/${town}` },
+  ]);
+
+  const faqItems = generateLocationFAQ({
+    name: townData.name,
+    hotelsCount: hotels.length,
+    attractionsCount: attractions.length,
+  });
+  const faqSchema = createFAQSchema(faqItems);
+
+  const seoIntro = generateLocationIntro({
+    name: townData.name,
+    description: townData.desc,
+    hotelsCount: hotels.length,
+    attractionsCount: attractions.length,
+    restaurantsCount: restaurants.length,
+  });
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <>
+      {/* JSON-LD Schemas */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: renderJsonLd(localBusinessSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: renderJsonLd(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: renderJsonLd(faqSchema) }}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Town hero */}
       <div className="rounded-[28px] bg-white border border-[var(--color-border)] shadow-sm p-8 mb-10">
         <nav className="text-xs text-[var(--color-muted)] mb-4">
@@ -135,6 +177,14 @@ export default async function TownPage({ params }: { params: Promise<Params> }) 
             center={[townData.lat, townData.lng]}
             zoom={13}
           />
+        </div>
+      </section>
+
+      {/* SEO Content */}
+      <section className="mb-10">
+        <div className="bg-white rounded-2xl border border-[var(--color-border)] shadow-sm p-6">
+          <h2 className="text-xl font-bold mb-4">O {townData.name}</h2>
+          <p className="text-[var(--color-text)] leading-relaxed">{seoIntro}</p>
         </div>
       </section>
 
@@ -224,7 +274,25 @@ export default async function TownPage({ params }: { params: Promise<Params> }) 
           </a>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      {faqItems.length > 0 && (
+        <section className="mt-10">
+          <div className="bg-white rounded-2xl border border-[var(--color-border)] shadow-sm p-6">
+            <h2 className="text-xl font-bold mb-4">Najczęściej zadawane pytania o {townData.name}</h2>
+            <div className="space-y-4">
+              {faqItems.map((item, index) => (
+                <div key={index} className="border-b border-[var(--color-border)] last:border-0 pb-4 last:pb-0">
+                  <h3 className="font-semibold text-sm mb-2">{item.question}</h3>
+                  <p className="text-sm text-[var(--color-muted)]">{item.answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
+    </>
   );
 }
 

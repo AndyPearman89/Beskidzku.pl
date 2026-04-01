@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getListing, getListings } from "@/core/api/listings";
 import ContactForm from "./ContactForm";
+import {
+  createAttractionSchema,
+  createBreadcrumbSchema,
+  renderJsonLd
+} from "@/core/seo/schemas";
+import { generateListingMetadata } from "@/core/seo/metadata";
 
 type Params = { id: string };
 
@@ -9,10 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { id } = await params;
   const listing = getListing(id);
   if (!listing) return {};
-  return {
-    title: `${listing.title} — ${listing.town} · Beskidzku.pl`,
-    description: listing.description,
-  };
+  return generateListingMetadata(listing);
 }
 
 export default async function ListingDetailPage({ params }: { params: Promise<Params> }) {
@@ -36,8 +39,37 @@ export default async function ListingDetailPage({ params }: { params: Promise<Pa
 
   const isContactVisible = listing.packageLevel !== "FREE";
 
+  // Generate JSON-LD schemas
+  const attractionSchema = listing.lat && listing.lng ? createAttractionSchema({
+    name: listing.title,
+    description: listing.description,
+    latitude: listing.lat,
+    longitude: listing.lng,
+    addressLocality: listing.town,
+    url: `https://beskidzku.pl/listings/${listing.id}`,
+  }) : null;
+
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: "Strona główna", url: "https://beskidzku.pl" },
+    { name: "Katalog", url: "https://beskidzku.pl/listings" },
+    { name: listing.title, url: `https://beskidzku.pl/listings/${listing.id}` },
+  ]);
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <>
+      {/* JSON-LD Schemas */}
+      {attractionSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: renderJsonLd(attractionSchema) }}
+        />
+      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: renderJsonLd(breadcrumbSchema) }}
+      />
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Breadcrumb */}
       <nav className="text-xs text-[var(--color-muted)] mb-6">
         <a href="/" className="hover:text-[var(--color-primary)]">Strona główna</a>
@@ -182,5 +214,6 @@ export default async function ListingDetailPage({ params }: { params: Promise<Pa
         <ContactForm listingId={listing.id} listingTitle={listing.title} />
       </div>
     </div>
+    </>
   );
 }
