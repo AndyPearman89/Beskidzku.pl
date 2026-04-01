@@ -224,3 +224,220 @@ Beskidzku.pl to:
 lokalny system generowania ruchu i leadów
 oparty o dane, mapy i intencję użytkownika,
 z monetyzacją w modelu abonamentowym i leadowym.
+
+⸻
+
+19. FRONTPAGE v3.0 — SPECYFIKACJA KONWERSJI
+
+CEL STRONY GŁÓWNEJ:
+Strona główna to główny punkt wejścia i ścieżka konwersji:
+
+WEJŚCIE → PLAN → WYBÓR → LEAD / BOOKING
+
+SEKCJE GŁÓWNE:
+
+1. HERO (WEJŚCIE GŁÓWNE)
+   Cel: natychmiastowe rozpoczęcie planowania
+
+   Zawartość:
+   - Nagłówek: "Zaplanuj Beskidy w 30 sekund"
+   - Formularz z trzema polami:
+     * gdzie? (wybór miejsca)
+     * kiedy? (termin/data)
+     * z kim? (typ grupy)
+
+   Quick options (filtry szybkie):
+   - 👨‍👩‍👧‍👦 z dziećmi
+   - 🥾 trekking
+   - 🧘 chill
+   - 🚴 aktywnie
+
+   CTA: "GENERUJ PLAN"
+   Zachowanie: przekierowanie do /planner z parametrami
+
+2. QUICK START (GOTOWE SCENARIUSZE)
+   Cel: skrócenie decyzji
+
+   Karty predefiniowane:
+   - "Weekend w Beskidach" (2 dni · top trasy + nocleg)
+   - "Dla rodzin" (łatwe szlaki + atrakcje dla dzieci)
+   - "Najlepsze szlaki" (widokowe + parking)
+   - "Jeziora" (plaże, pomosty, aktywności wodne)
+
+   Zachowanie: klik = planner z gotową konfiguracją
+
+3. MAPA + LISTA (DISCOVERY ENGINE)
+   Cel: wizualne odkrywanie z filtrowaniem
+
+   Desktop:
+   [ LISTA ] | [ MAPA ]
+
+   Mobile:
+   [ MAPA ]
+   [ bottom sheet → LISTA ]
+
+   Funkcje:
+   - filtrowanie: noclegi, atrakcje, szlaki
+   - sortowanie: popularność, odległość
+   - interakcja: hover = podświetlenie, klik = szczegóły
+
+   Hierarchia markerów (według pakietu):
+   - FREE → neutralne szare markery (wspólna lokalizacja)
+   - PREMIUM → czerwone markery (dokładna lokalizacja)
+   - PREMIUM+ → wyróżnione markery ze specjalnym stylem
+
+4. PLANNER (MODUŁ GŁÓWNY)
+   Cel: interaktywne planowanie z punktami monetyzacji
+
+   Struktura:
+   - punkt startowy (parking z pojemnością)
+   - punkty na trasie/szlaki
+   - przystanki przy atrakcjach
+   - rekomendacje noclegów
+
+   Wyświetlane dane:
+   - dystans (km) — wzór Haversine
+   - czas (godziny)
+   - profil wysokości (+metry) — do implementacji
+
+   CTA główne:
+   - "ZAREZERWUJ" (rezerwacja bezpośrednia)
+   - "ZAPYTAJ" (formularz zapytania/lead)
+
+   Eksport:
+   - integracja Google Maps (trasa wielopunktowa)
+   - zapis lokalny (localStorage)
+   - udostępnianie linkiem (przyszłość)
+
+5. NOCLEGI (MONETYZACJA GŁÓWNA)
+   Cel: prowadzenie do rezerwacji i leadów
+
+   Elementy karty:
+   - zdjęcie
+   - nazwa
+   - lokalizacja (miejscowość)
+   - ocena (0-10)
+   - badge (FREE/PREMIUM/PREMIUM+)
+   - cena lub "kontakt"
+
+   CTA podwójne:
+   - "Zobacz" (pełne szczegóły)
+   - "Zapytaj" (formularz leada)
+
+   Logika:
+   - FREE → dane kontaktowe ukryte, wymagany formularz
+   - PREMIUM → pełny kontakt widoczny
+   - PREMIUM+ → najwyższa pozycja, wyróżnienie
+
+6. BLOK POGODY
+   Cel: pomoc w planowaniu kontekstowym
+
+   Dane na żywo:
+   - aktualna temperatura (°C)
+   - status pogody
+   - alerty pogodowe
+
+   Przykłady:
+   - "21°C — dobre warunki"
+   - "Możliwe burze po południu"
+   - "Śnieg na szlakach — sprawdź warunki przed wyjazdem"
+
+   Źródło: Open-Meteo API (darmowe)
+   Cache: 1 godzina (Next.js ISR)
+
+7. MODUŁ PARKINGÓW
+   Cel: wartość praktyczna
+
+   Informacje:
+   - nazwa i adres parkingu
+   - pojemność (liczba miejsc)
+   - typ (darmowy/płatny)
+   - odległość do szlaku/atrakcji
+
+   CTA: "Dodaj do planu"
+
+8. GOTOWE PLANY (SEO + QUICK START)
+   Cel: landing pages SEO + szybkie planowanie
+
+   Sekcje tras:
+   - "1 dzień w Beskidach" (parking → szlak → atrakcja → obiad)
+   - "Weekend dla par" (widoki + SPA + kolacja)
+   - "Dla rodzin" (łatwe trasy + place zabaw + jeziora)
+   - "Top atrakcje [Region]" (najlepsze miejsca w regionie)
+
+   Zachowanie: klik = planner z preloadem
+   Wartość SEO: landing pages dla "[aktywność] + [lokalizacja]"
+
+9. ADSENSE (MONETYZACJA DODATKOWA)
+   Cel: przychód z reklam bez zakłócania UX
+
+   Umiejscowienie:
+   - między sekcjami
+   - pod blokami listingów
+   - natywny styl dopasowany do designu
+
+   Zasady:
+   - nie zakłóca doświadczenia użytkownika
+   - niższy priorytet niż CTA lead/booking
+
+   Status: do implementacji (wymaga konta Google AdSense)
+
+10. FINAL CTA (OSTATNIA SZANSA KONWERSJI)
+    Cel: reaktywacja przed opuszczeniem strony
+
+    Treść: "Nie trać czasu — zaplanuj teraz"
+
+    Przyciski:
+    - Główny: "Zaplanuj" → /planner
+    - Dodatkowy: "Znajdź nocleg" → /listings?type=hotel
+
+    Design: czerwone tło, duży biały tekst
+    Umiejscowienie: dół strony, przed stopką
+
+11. MOBILE UX
+    Cel: optymalizacja dla kciuka
+
+    Elementy:
+    - dolna nawigacja (sticky) — do zrobienia
+    - duże przyciski dotykowe (min 44x44px)
+    - pływający przycisk plannera — do zrobienia
+    - układ jednokolumnowy na małych ekranach
+
+    Zasada: wszystkie kluczowe akcje w zasięgu kciuka
+
+12. ŚCIEŻKA KONWERSJI (USER FLOW)
+
+    Kroki:
+    1. wejście na stronę główną
+    2. interakcja z hero lub quick start
+    3. przekierowanie do plannera z kontekstem
+    4. dodawanie/edycja punktów wycieczki
+    5. przeglądanie noclegów
+    6. ocena opcji (cena, lokalizacja)
+    7. akcja finalna:
+       → formularz leada (FREE), lub
+       → rezerwacja (PREMIUM)
+
+    Metryki sukcesu:
+    - wskaźnik wypełnienia formularza hero
+    - czas w plannerze
+    - wskaźnik wysłania leada
+    - CTR do noclegów
+
+STATUS IMPLEMENTACJI (na 2026-04-01):
+- ✅ Hero z formularzem i quick options
+- ✅ Karty quick start
+- ✅ Mapa + lista (discovery)
+- ✅ Moduł plannera
+- ✅ Bloki noclegów
+- ✅ Integracja pogody (Open-Meteo)
+- ✅ Karty parkingów
+- ✅ Sekcja gotowych planów
+- ✅ Final CTA
+- ✅ Responsywność mobile
+- ⏳ Bottom sheet mobile (do zrobienia)
+- ⏳ Różnicowanie markerów (do zrobienia)
+- ⏳ AdSense (do zrobienia)
+- ⏳ Profil wysokości (do zrobienia)
+
+Szczegółowa checklista: FRONTPAGE_V3_IMPLEMENTATION.md
