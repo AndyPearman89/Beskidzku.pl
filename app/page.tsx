@@ -14,10 +14,10 @@ const QUICK_OPTIONS = [
 ];
 
 const QUICK_START = [
-  { title: "Weekend w Beskidach", params: "q=weekend&style=aktywnie", meta: "2 dni · top trasy + nocleg" },
-  { title: "Dla rodzin", params: "q=rodzina&style=z-dziecmi", meta: "spokojne szlaki + atrakcje dla dzieci" },
-  { title: "Najlepsze szlaki", params: "q=szlaki&style=trekking", meta: "widokowe + parking startowy" },
-  { title: "Jeziora", params: "q=jeziora&style=chill", meta: "plaże, pomosty, rowerki" },
+  { title: "Weekend w Beskidach", href: "/planner", meta: "2 dni · top trasy + nocleg" },
+  { title: "Dla rodzin", href: "/listings?q=rodzina", meta: "spokojne szlaki + atrakcje dla dzieci" },
+  { title: "Najlepsze szlaki", href: "/listings?type=attraction", meta: "widokowe + parking startowy" },
+  { title: "Jeziora", href: "/listings?q=jezioro", meta: "plaże, pomosty, rowerki" },
 ];
 
 const PLANNER_POINTS = [
@@ -34,25 +34,72 @@ const STAYS = [
 ];
 
 const READY_PLANS = [
-  { title: "1 dzień w Beskidach", desc: "parking → szlak → atrakcja → obiad", tag: "szybko" },
-  { title: "Weekend dla par", desc: "widoki + nocleg z SPA + kolacja", tag: "romantycznie" },
-  { title: "Top atrakcje Wisła", desc: "skocznia, deptak, browar", tag: "family" },
-  { title: "Beskidy z dziećmi", desc: "łatwe trasy + place zabaw + jezioro", tag: "kids" },
+  { title: "1 dzień w Beskidach", desc: "parking → szlak → atrakcja → obiad", tag: "szybko", href: "/planner" },
+  { title: "Weekend dla par", desc: "widoki + nocleg z SPA + kolacja", tag: "romantycznie", href: "/planner" },
+  { title: "Top atrakcje Wisła", desc: "skocznia, deptak, browar", tag: "family", href: "/region/wisla" },
+  { title: "Beskidy z dziećmi", desc: "łatwe trasy + place zabaw + jezioro", tag: "kids", href: "/planner" },
 ];
-
-const WEATHER = {
-  temp: "21°C",
-  status: "dobre warunki",
-  alert: "Możliwe burze po południu — zaplanuj start wcześniej",
-};
 
 const PARKINGS = [
   { name: "Szczyrk Gondola", spots: "180 miejsc", type: "płatny", distance: "50 m do kolejki" },
   { name: "Wisła Centrum", spots: "120 miejsc", type: "darmowy 2h", distance: "300 m deptak" },
 ];
 
-export default function HomePage() {
-  const featuredListings = getListings({ perPage: 4 }).items;
+const REGIONS = [
+  { name: "Szczyrk", slug: "szczyrk", emoji: "⛷️", desc: "sporty zimowe" },
+  { name: "Wisła", slug: "wisla", emoji: "🎿", desc: "skocznia, uzdrowisko" },
+  { name: "Ustroń", slug: "ustron", emoji: "💆", desc: "SPA, wody mineralne" },
+  { name: "Żywiec", slug: "zywiec", emoji: "🍺", desc: "browar, jezioro" },
+  { name: "Bielsko-Biała", slug: "bielsko-biala", emoji: "🏰", desc: "zamek, centrum" },
+  { name: "Sucha Beskidzka", slug: "sucha", emoji: "🏯", desc: "zamek renesansowy" },
+];
+
+interface WeatherData {
+  temp: string;
+  status: string;
+  icon: string;
+  alert?: string;
+}
+
+async function fetchWeather(): Promise<WeatherData> {
+  try {
+    const res = await fetch(
+      "https://api.open-meteo.com/v1/forecast?latitude=49.7156&longitude=19.0343&current_weather=true&timezone=Europe/Warsaw",
+      { next: { revalidate: 3600 } }
+    );
+    if (!res.ok) throw new Error("weather fetch failed");
+    const data = await res.json() as { current_weather?: { temperature?: number; weathercode?: number; windspeed?: number } };
+    const cw = data.current_weather;
+    if (!cw) throw new Error("no current_weather");
+    const temp = Math.round(cw.temperature ?? 0);
+    const code = cw.weathercode ?? 0;
+    const goodCodes = [0, 1, 2];
+    const badCodes = [95, 96, 99, 82];
+    const snowCodes = [71, 73, 75, 77, 85, 86];
+    const icons: Record<number, string> = {
+      0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️", 45: "🌫️", 48: "🌫️",
+      51: "🌦️", 53: "🌧️", 61: "🌦️", 63: "🌧️", 65: "🌧️",
+      71: "🌨️", 73: "❄️", 75: "❄️", 80: "🌦️", 81: "🌧️",
+      95: "⛈️", 96: "⛈️", 99: "⛈️",
+    };
+    const icon = icons[code] ?? "🌡️";
+    let status = "warunki nieznane";
+    let alert: string | undefined;
+    if (goodCodes.includes(code)) status = "dobre warunki";
+    else if (snowCodes.includes(code)) { status = "warunki zimowe"; alert = "Śnieg na szlakach — sprawdź warunki przed wyjazdem"; }
+    else if (badCodes.includes(code)) { status = "uwaga — burza"; alert = "Burza — odłóż wyjście na szlak"; }
+    else status = "zmienne warunki";
+    return { temp: `${temp}°C`, status, icon, alert };
+  } catch {
+    return { temp: "–", status: "brak danych", icon: "🌡️", alert: undefined };
+  }
+}
+
+export default async function HomePage() {
+  const [featuredListings, weather] = await Promise.all([
+    Promise.resolve(getListings({ perPage: 4 }).items),
+    fetchWeather(),
+  ]);
 
   return (
     <div className="bg-[var(--color-bg)] text-[var(--color-text)]">
@@ -73,7 +120,7 @@ export default function HomePage() {
                 Wybierz miejsce, termin i styl. Dostaniesz gotowy plan dnia, mapę i noclegi do wyboru.
               </p>
               <form
-                action="/listings"
+                action="/planner"
                 method="get"
                 className="bg-white/70 backdrop-blur rounded-2xl border border-[var(--color-border)] shadow-sm p-4 grid grid-cols-1 md:grid-cols-4 gap-3"
               >
@@ -173,10 +220,10 @@ export default function HomePage() {
                 ))}
               </div>
               <a
-                href="#planner"
+                href="/planner"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] text-white font-semibold py-3 hover:bg-[var(--color-primary-hover)] transition-colors"
               >
-                Zobacz planner
+                Otwórz planner
                 <span aria-hidden>→</span>
               </a>
             </div>
@@ -199,7 +246,7 @@ export default function HomePage() {
           {QUICK_START.map((preset) => (
             <a
               key={preset.title}
-              href={`/listings?${preset.params}`}
+              href={preset.href}
               className="group rounded-2xl bg-white border border-[var(--color-border)] p-5 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all"
             >
               <div className="flex items-center justify-between gap-2">
@@ -416,27 +463,30 @@ export default function HomePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wide">Pogoda</p>
-                <h3 className="text-lg font-bold">Warunki na dziś</h3>
+                <h3 className="text-lg font-bold">Warunki na dziś · Szczyrk</h3>
               </div>
               <span className="px-3 py-1.5 text-sm rounded-full bg-[#e8f5e9] text-green-700 font-semibold">
-                {WEATHER.status}
+                {weather.status}
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-4 text-3xl font-extrabold">
-              {WEATHER.temp}
-              <span className="text-sm text-[var(--color-muted)] font-semibold">Wisła · Szczyrk · Żywiec</span>
+              <span>{weather.icon}</span>
+              {weather.temp}
+              <span className="text-sm text-[var(--color-muted)] font-semibold">Szczyrk · Wisła · Żywiec</span>
             </div>
-            <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-sm font-semibold px-4 py-3">
-              ⚠ {WEATHER.alert}
-            </div>
+            {weather.alert && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-sm font-semibold px-4 py-3">
+                ⚠ {weather.alert}
+              </div>
+            )}
             <p className="text-sm text-[var(--color-muted)]">
-              Planner automatycznie przesunie start trasy i zaproponuje indoor/jezioro jeśli pogoda się pogorszy.
+              Pogoda pobierana na żywo z Open-Meteo. Planner dobiera trasy do aktualnych warunków.
             </p>
           </div>
           <div className="rounded-2xl bg-white border border-[var(--color-border)] shadow-sm p-5 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold">Parking</h3>
-              <span className="text-xs font-semibold text-[var(--color-muted)]">live</span>
+              <span className="text-xs font-semibold text-[var(--color-muted)]">info</span>
             </div>
             {PARKINGS.map((p) => (
               <div key={p.name} className="rounded-xl border border-[var(--color-border)] p-4 bg-[var(--color-bg)]">
@@ -444,10 +494,10 @@ export default function HomePage() {
                 <p className="text-sm text-[var(--color-muted)]">{p.spots} · {p.type}</p>
                 <p className="text-xs text-[var(--color-primary)] font-semibold mt-1">{p.distance}</p>
                 <a
-                  href="/listings?type=attraction"
+                  href="/planner"
                   className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-primary)] mt-2 hover:underline"
                 >
-                  Nawiguj
+                  Dodaj do planu
                   <span aria-hidden>→</span>
                 </a>
               </div>
@@ -463,15 +513,15 @@ export default function HomePage() {
             <p className="text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wide">Gotowe plany</p>
             <h2 className="text-2xl font-bold">Kliknij i startuj</h2>
           </div>
-          <a href="/listings?q=plan" className="text-sm font-semibold text-[var(--color-primary)] hover:underline">
-            Więcej planów
+          <a href="/planner" className="text-sm font-semibold text-[var(--color-primary)] hover:underline">
+            Otwórz planner →
           </a>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {READY_PLANS.map((plan) => (
             <a
               key={plan.title}
-              href={`/listings?preset=${encodeURIComponent(plan.title)}`}
+              href={plan.href}
               className="group rounded-2xl bg-white border border-[var(--color-border)] p-5 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all"
             >
               <div className="flex items-center justify-between gap-2">
@@ -482,8 +532,31 @@ export default function HomePage() {
               </div>
               <p className="text-sm text-[var(--color-muted)] mt-2">{plan.desc}</p>
               <span className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-primary)] mt-3">
-                Otwórz planner <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
+                Otwórz <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
               </span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* Region pages */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <p className="text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wide">Miejscowości</p>
+            <h2 className="text-2xl font-bold">Odkryj Beskidy według miejscowości</h2>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {REGIONS.map((region) => (
+            <a
+              key={region.slug}
+              href={`/region/${region.slug}`}
+              className="group rounded-2xl bg-white border border-[var(--color-border)] p-4 shadow-sm hover:shadow-md hover:border-[var(--color-primary)] hover:-translate-y-1 transition-all text-center"
+            >
+              <p className="text-3xl mb-2">{region.emoji}</p>
+              <p className="font-semibold text-sm">{region.name}</p>
+              <p className="text-xs text-[var(--color-muted)] mt-1">{region.desc}</p>
             </a>
           ))}
         </div>
@@ -502,10 +575,10 @@ export default function HomePage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <a
-                href="/listings?q=planner"
+                href="/planner"
                 className="inline-flex items-center justify-center bg-white text-[var(--color-primary)] font-bold px-6 py-3 rounded-xl hover:bg-gray-100 transition-colors"
               >
-                Zaplanuj
+                Otwórz planner
               </a>
               <a
                 href="/listings?type=hotel"

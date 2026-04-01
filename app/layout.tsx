@@ -49,11 +49,14 @@ export default function RootLayout({
               <a href="/listings" className="text-[var(--color-muted)] hover:text-[var(--color-primary)] transition-colors">
                 Katalog
               </a>
+              <a href="/planner" className="text-[var(--color-muted)] hover:text-[var(--color-primary)] transition-colors">
+                Planner
+              </a>
               <a
-                href="/#planner"
+                href="/planner"
                 className="text-[var(--color-primary)] border border-[var(--color-primary)] px-3 py-1.5 rounded-full hover:bg-[var(--color-primary)] hover:text-white transition-colors"
               >
-                Planner
+                Zaplanuj trasę
               </a>
             </nav>
             <div className="flex items-center gap-2">
@@ -64,7 +67,7 @@ export default function RootLayout({
                 Dodaj firmę
               </a>
               <a
-                href="/listings?q=planner"
+                href="/planner"
                 className="inline-flex bg-[var(--color-primary)] text-white text-sm px-4 py-2 rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors font-semibold shadow-[0_10px_30px_rgba(227,6,19,0.15)]"
               >
                 Zaplanuj wycieczkę
@@ -81,6 +84,8 @@ export default function RootLayout({
               <a href="/listings?type=hotel" className="hover:text-white transition-colors">Noclegi</a>
               <a href="/listings?type=attraction" className="hover:text-white transition-colors">Atrakcje</a>
               <a href="/listings" className="hover:text-white transition-colors">Katalog</a>
+              <a href="/planner" className="hover:text-white transition-colors">Planner</a>
+              <a href="/dodaj-firme" className="hover:text-white transition-colors">Dodaj firmę</a>
             </div>
             <p className="mt-2 text-gray-500">
               © {new Date().getFullYear()} Beskidzku.pl · zbudowane na PearTree
