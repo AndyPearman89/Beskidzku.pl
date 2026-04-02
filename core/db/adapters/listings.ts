@@ -10,6 +10,7 @@
 
 import prisma from '@/core/db/prisma'
 import type { Listing, PackageLevel } from '@/core/api/listings'
+import { PackageLevel as PrismaPackageLevel } from '@prisma/client'
 
 // Map between Prisma enum and app enum for packageLevel
 function mapPackageLevelToApp(level: string): PackageLevel {
@@ -17,9 +18,33 @@ function mapPackageLevelToApp(level: string): PackageLevel {
   return level as PackageLevel
 }
 
-function mapPackageLevelToPrisma(level: PackageLevel): string {
-  if (level === 'PREMIUM+') return 'PREMIUM_PLUS'
-  return level
+function mapPackageLevelToPrisma(level: PackageLevel): PrismaPackageLevel {
+  if (level === 'PREMIUM+') return PrismaPackageLevel.PREMIUM_PLUS
+  return PrismaPackageLevel[level]
+}
+
+// Convert Prisma listing (with null) to app Listing (with undefined)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapPrismaListingToApp(listing: any): Listing {
+  return {
+    id: listing.id,
+    title: listing.title,
+    type: listing.type,
+    category: listing.category,
+    town: listing.town,
+    lat: listing.lat ?? undefined,
+    lng: listing.lng ?? undefined,
+    address: listing.address,
+    description: listing.description,
+    phone: listing.phone ?? undefined,
+    website: listing.website ?? undefined,
+    email: listing.email ?? undefined,
+    amenities: listing.amenities ?? undefined,
+    packageLevel: mapPackageLevelToApp(listing.packageLevel),
+    ownerId: listing.ownerId ?? undefined,
+    createdAt: listing.createdAt.toISOString(),
+    updatedAt: listing.updatedAt.toISOString(),
+  }
 }
 
 /**
@@ -70,12 +95,8 @@ export const listingsDb = {
       ],
     })
 
-    return listings.map(listing => ({
-      ...listing,
-      packageLevel: mapPackageLevelToApp(listing.packageLevel),
-      createdAt: listing.createdAt.toISOString(),
-      updatedAt: listing.updatedAt.toISOString(),
-    }))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return listings.map((listing: any) => mapPrismaListingToApp(listing))
   },
 
   /**
@@ -88,12 +109,7 @@ export const listingsDb = {
 
     if (!listing) return null
 
-    return {
-      ...listing,
-      packageLevel: mapPackageLevelToApp(listing.packageLevel),
-      createdAt: listing.createdAt.toISOString(),
-      updatedAt: listing.updatedAt.toISOString(),
-    }
+    return mapPrismaListingToApp(listing)
   },
 
   /**
@@ -102,17 +118,24 @@ export const listingsDb = {
   async create(data: Omit<Listing, 'id' | 'createdAt' | 'updatedAt'>): Promise<Listing> {
     const listing = await prisma.listing.create({
       data: {
-        ...data,
+        title: data.title,
+        type: data.type,
+        category: data.category,
+        town: data.town,
+        lat: data.lat ?? null,
+        lng: data.lng ?? null,
+        address: data.address,
+        description: data.description,
+        phone: data.phone ?? null,
+        website: data.website ?? null,
+        email: data.email ?? null,
+        amenities: data.amenities ?? [],
         packageLevel: mapPackageLevelToPrisma(data.packageLevel),
+        ownerId: data.ownerId ?? null,
       },
     })
 
-    return {
-      ...listing,
-      packageLevel: mapPackageLevelToApp(listing.packageLevel),
-      createdAt: listing.createdAt.toISOString(),
-      updatedAt: listing.updatedAt.toISOString(),
-    }
+    return mapPrismaListingToApp(listing)
   },
 
   /**
@@ -129,12 +152,7 @@ export const listingsDb = {
       data: updateData,
     })
 
-    return {
-      ...listing,
-      packageLevel: mapPackageLevelToApp(listing.packageLevel),
-      createdAt: listing.createdAt.toISOString(),
-      updatedAt: listing.updatedAt.toISOString(),
-    }
+    return mapPrismaListingToApp(listing)
   },
 
   /**

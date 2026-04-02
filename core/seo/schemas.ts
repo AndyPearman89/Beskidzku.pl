@@ -20,7 +20,7 @@ export interface Organization {
   };
 }
 
-export interface LocalBusiness extends Organization {
+export interface LocalBusiness extends Omit<Organization, "@type"> {
   "@type": "LocalBusiness";
   address?: {
     "@type": "PostalAddress";

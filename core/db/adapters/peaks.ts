@@ -5,6 +5,28 @@
 import prisma from '@/core/db/prisma'
 import type { Peak } from '@/core/api/peaks'
 
+// Convert Prisma peak (with null) to app Peak (with undefined)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapPrismaPeakToApp(peak: any): Peak {
+  return {
+    id: peak.id,
+    name: peak.name,
+    slug: peak.slug,
+    lat: peak.lat,
+    lng: peak.lng,
+    elevation: peak.elevation,
+    range: peak.range,
+    difficulty: peak.difficulty,
+    hiking_time: peak.hiking_time,
+    parking_lat: peak.parking_lat ?? undefined,
+    parking_lng: peak.parking_lng ?? undefined,
+    viewpoints: peak.viewpoints ?? undefined,
+    description: peak.description ?? undefined,
+    createdAt: peak.createdAt.toISOString(),
+    updatedAt: peak.updatedAt.toISOString(),
+  }
+}
+
 export const peaksDb = {
   /**
    * Find all peaks with optional filters
@@ -65,11 +87,8 @@ export const peaksDb = {
       orderBy,
     })
 
-    return peaks.map(peak => ({
-      ...peak,
-      createdAt: peak.createdAt.toISOString(),
-      updatedAt: peak.updatedAt.toISOString(),
-    }))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return peaks.map((peak: any) => mapPrismaPeakToApp(peak))
   },
 
   /**
@@ -82,11 +101,7 @@ export const peaksDb = {
 
     if (!peak) return null
 
-    return {
-      ...peak,
-      createdAt: peak.createdAt.toISOString(),
-      updatedAt: peak.updatedAt.toISOString(),
-    }
+    return mapPrismaPeakToApp(peak)
   },
 
   /**
@@ -99,11 +114,7 @@ export const peaksDb = {
 
     if (!peak) return null
 
-    return {
-      ...peak,
-      createdAt: peak.createdAt.toISOString(),
-      updatedAt: peak.updatedAt.toISOString(),
-    }
+    return mapPrismaPeakToApp(peak)
   },
 
   /**
@@ -111,14 +122,23 @@ export const peaksDb = {
    */
   async create(data: Omit<Peak, 'id' | 'createdAt' | 'updatedAt'>): Promise<Peak> {
     const peak = await prisma.peak.create({
-      data,
+      data: {
+        name: data.name,
+        slug: data.slug,
+        lat: data.lat,
+        lng: data.lng,
+        elevation: data.elevation,
+        range: data.range,
+        difficulty: data.difficulty,
+        hiking_time: data.hiking_time,
+        parking_lat: data.parking_lat ?? null,
+        parking_lng: data.parking_lng ?? null,
+        viewpoints: data.viewpoints ?? [],
+        description: data.description ?? null,
+      },
     })
 
-    return {
-      ...peak,
-      createdAt: peak.createdAt.toISOString(),
-      updatedAt: peak.updatedAt.toISOString(),
-    }
+    return mapPrismaPeakToApp(peak)
   },
 
   /**
@@ -130,11 +150,7 @@ export const peaksDb = {
       data,
     })
 
-    return {
-      ...peak,
-      createdAt: peak.createdAt.toISOString(),
-      updatedAt: peak.updatedAt.toISOString(),
-    }
+    return mapPrismaPeakToApp(peak)
   },
 
   /**
@@ -206,10 +222,7 @@ export const peaksDb = {
       },
     })
 
-    return peaks.map(peak => ({
-      ...peak,
-      createdAt: peak.createdAt.toISOString(),
-      updatedAt: peak.updatedAt.toISOString(),
-    }))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return peaks.map((peak: any) => mapPrismaPeakToApp(peak))
   },
 }
