@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getListings } from "@/core/api/listings";
 import { createOrganizationSchema, renderJsonLd } from "@/core/seo/schemas";
+import DiscoveryMapSection from "@/app/components/DiscoveryMapSection";
 
 export const metadata: Metadata = {
   title: "Beskidzku.pl — Planner Beskidów",
@@ -287,7 +288,7 @@ export default async function HomePage() {
             <p className="text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wide">Mapa + lista</p>
             <h2 className="text-2xl font-bold">Odkrywaj i filtruj w jednym miejscu</h2>
           </div>
-          <div className="flex items-center gap-2 text-sm text-[var(--color-muted)]">
+          <div className="hidden lg:flex items-center gap-2 text-sm text-[var(--color-muted)]">
             <span className="h-3 w-3 rounded-full bg-gray-300" /> FREE
             <span className="h-3 w-3 rounded-full bg-[var(--color-primary)]" /> PREMIUM
             <span className="px-2 py-1 text-xs rounded-full border border-[var(--color-primary)] text-[var(--color-primary)]">
@@ -295,95 +296,7 @@ export default async function HomePage() {
             </span>
           </div>
         </div>
-        <div className="grid lg:grid-cols-2 gap-6 items-stretch">
-          <div className="rounded-2xl bg-white border border-[var(--color-border)] shadow-sm p-5 space-y-4">
-            <div className="flex flex-wrap gap-2">
-              {["noclegi", "atrakcje", "szlaki"].map((filter) => (
-                <button
-                  key={filter}
-                  className="px-3 py-2 rounded-full border border-[var(--color-border)] text-sm font-semibold hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
-                  type="button"
-                >
-                  {filter}
-                </button>
-              ))}
-              <button
-                type="button"
-                className="px-3 py-2 rounded-full bg-[var(--color-primary)] text-white text-sm font-semibold shadow-[0_12px_24px_rgba(227,6,19,0.14)]"
-              >
-                Sortuj: popularność
-              </button>
-            </div>
-            <div className="space-y-3">
-              {featuredListings.map((listing) => (
-                <a
-                  key={listing.id}
-                  href={`/listings?q=${encodeURIComponent(listing.title)}`}
-                  className="block rounded-xl border border-[var(--color-border)] p-4 hover:border-[var(--color-primary)] hover:shadow-md transition-all bg-[var(--color-bg)]"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-sm uppercase tracking-wide text-[var(--color-muted)]">{listing.type}</p>
-                      <h3 className="text-lg font-semibold leading-tight">{listing.title}</h3>
-                      <p className="text-sm text-[var(--color-muted)]">
-                        📍 {listing.town} · {listing.address || "adres wkrótce"}
-                      </p>
-                    </div>
-                    <span className="px-2 py-1 text-xs rounded-full bg-[var(--color-primary-soft)] text-[var(--color-primary)] font-semibold">
-                      PREMIUM
-                    </span>
-                  </div>
-                  <p className="text-sm text-[var(--color-text)] mt-2 line-clamp-2">{listing.description}</p>
-                </a>
-              ))}
-            </div>
-          </div>
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#ffecef] via-white to-[#f6f7f9] border border-[var(--color-border)] shadow-[0_25px_50px_rgba(0,0,0,0.08)] p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wide">Mapa</p>
-                <h3 className="text-xl font-bold">Markery premium wyróżnione</h3>
-              </div>
-              <span className="text-[var(--color-primary)] font-semibold text-sm bg-white border border-[var(--color-border)] px-3 py-1.5 rounded-full shadow-sm">
-                Widok live
-              </span>
-            </div>
-            <div className="relative aspect-[4/3] rounded-2xl bg-white border border-[var(--color-border)] overflow-hidden">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(227,6,19,0.08),transparent_45%),radial-gradient(circle_at_70%_60%,rgba(0,0,0,0.05),transparent_40%)]" />
-              <div className="absolute inset-0">
-                {featuredListings.slice(0, 4).map((listing, idx) => {
-                  const positions = [
-                    { top: "18%", left: "22%" },
-                    { top: "45%", left: "68%" },
-                    { top: "62%", left: "30%" },
-                    { top: "28%", left: "52%" },
-                  ];
-                  const pos = positions[idx] ?? { top: "40%", left: "50%" };
-                  return (
-                    <div
-                      key={listing.id}
-                      className="absolute flex flex-col items-center gap-1"
-                      style={pos}
-                    >
-                      <div className="relative">
-                        <span className="absolute -inset-2 rounded-full bg-[var(--color-primary-soft)] blur-sm" />
-                        <span className="relative inline-flex items-center justify-center h-9 w-9 rounded-full bg-[var(--color-primary)] text-white shadow-[0_15px_30px_rgba(227,6,19,0.4)]">
-                          {listing.type.slice(0, 1).toUpperCase()}
-                        </span>
-                      </div>
-                      <span className="text-xs font-semibold bg-white border border-[var(--color-border)] rounded-full px-3 py-1 shadow-sm">
-                        {listing.town}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <p className="mt-4 text-sm text-[var(--color-muted)]">
-              Hover/klik = podświetlenie na mapie · PREMIUM czerwone · FREE neutralne.
-            </p>
-          </div>
-        </div>
+        <DiscoveryMapSection listings={featuredListings} />
       </section>
 
       {/* Planner module */}

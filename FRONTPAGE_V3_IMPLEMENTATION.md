@@ -50,7 +50,7 @@ This document tracks the implementation status of the Front Page v3.0 specificat
 
 ---
 
-### 3. MAPA + LISTA (DISCOVERY ENGINE) ⚠️ PARTIALLY COMPLETED
+### 3. MAPA + LISTA (DISCOVERY ENGINE) ✅ COMPLETED
 **Goal:** Visual discovery and filtering
 
 #### Desktop Layout
@@ -60,9 +60,10 @@ This document tracks the implementation status of the Front Page v3.0 specificat
 - [x] Listing cards with hover effects
 
 #### Mobile Layout
-- [ ] ⏳ **PENDING:** Bottom sheet for list view
+- [x] ✅ **COMPLETED:** Bottom sheet for list view (2026-04-02)
 - [x] Map takes primary position
-- [x] Responsive stacking (currently grid-based)
+- [x] Swipe gestures for sheet control
+- [x] Touch-friendly interactions
 
 #### Map Features
 - [x] Leaflet integration
@@ -71,9 +72,9 @@ This document tracks the implementation status of the Front Page v3.0 specificat
 - [x] ✅ **COMPLETED:** Marker clustering for performance
 - [x] Hover/click interactions
 
-**Status:** ⚠️ 90% complete — only mobile bottom sheet pending
+**Status:** ✅ 100% complete — all map and mobile features implemented
 
-**Files:** `app/page.tsx:262-366`, `app/components/ListingsMap.tsx`
+**Files:** `app/page.tsx:284-300`, `app/components/DiscoveryMapSection.tsx`, `app/components/BottomSheet.tsx`, `app/components/ListingsMap.tsx`
 
 ---
 
@@ -225,13 +226,13 @@ Flow stages:
 
 | Category | Status | Count |
 |----------|--------|-------|
-| ✅ Completed | 10/12 | 83% |
-| ⚠️ Partially Completed | 2/12 | 17% |
+| ✅ Completed | 11/12 | 92% |
+| ⚠️ Partially Completed | 1/12 | 8% |
 | ❌ Not Started | 1/12 | 8% |
 
-**Overall Implementation Status:** ⚠️ 90% Complete
+**Overall Implementation Status:** ⚠️ 95% Complete
 
-**Note:** Marker differentiation and clustering have been completed (2026-04-02)
+**Note:** Marker differentiation, clustering, and mobile bottom sheet completed (2026-04-02)
 
 ---
 
@@ -239,22 +240,28 @@ Flow stages:
 
 ### Critical Gaps
 
-#### 1. Mobile Bottom Sheet (Priority: HIGH)
-**Issue:** Mobile users don't have an optimized list view
-- **Current:** Grid-based stacking
-- **Required:** Bottom sheet drawer that overlays the map
-- **Estimated Effort:** 4-6 hours
-- **Files to modify:** `app/page.tsx`, new component `app/components/BottomSheet.tsx`
-
-#### 2. AdSense Integration (Priority: MEDIUM)
-**Issue:** Secondary revenue stream not implemented
-- **Current:** No ads
-- **Required:** Google AdSense integration with native styling
-- **Estimated Effort:** 3-4 hours
-- **Blockers:** Requires Google AdSense account approval
-- **Files to modify:** `app/layout.tsx`, create ad components
+~~No critical gaps remaining - all Phase 1 features complete!~~
 
 ### Completed Features (2026-04-02)
+
+#### ✅ Mobile Bottom Sheet (COMPLETED)
+**Implementation:** Swipeable bottom sheet for mobile list view
+- **Component:** Reusable `BottomSheet.tsx` with gesture support
+- **Features:**
+  - Three snap points (40%, 70%, 90%)
+  - Touch/swipe gestures for control
+  - Smooth animations with cubic-bezier easing
+  - Backdrop overlay
+  - Handle bar for visual affordance
+- **Integration:** `DiscoveryMapSection.tsx` client component
+- **Mobile UX:**
+  - Map-first view with "Zobacz listę" button
+  - Listings in swipeable sheet
+  - Touch-friendly card design with active states
+  - Filter buttons in sheet
+- **Files created:**
+  - `app/components/BottomSheet.tsx`
+  - `app/components/DiscoveryMapSection.tsx`
 
 #### ✅ Marker Differentiation (COMPLETED)
 **Implementation:** Package-tier specific markers on map
@@ -271,9 +278,17 @@ Flow stages:
 - **Behavior:** Spiderfy on max zoom, click to zoom into bounds
 - **Files modified:** `app/components/ListingsMap.tsx`
 
-### Minor Gaps
+### Remaining Gaps
 
-#### 3. Elevation Profile (Priority: LOW)
+#### 1. AdSense Integration (Priority: MEDIUM)
+**Issue:** Secondary revenue stream not implemented
+- **Current:** No ads
+- **Required:** Google AdSense integration with native styling
+- **Estimated Effort:** 3-4 hours
+- **Blockers:** Requires Google AdSense account approval
+- **Files to modify:** `app/layout.tsx`, create ad components
+
+#### 2. Elevation Profile (Priority: LOW)
 **Issue:** Planner doesn't show elevation changes
 - **Current:** Distance and time only
 - **Required:** Visual elevation profile chart
@@ -281,14 +296,14 @@ Flow stages:
 - **Dependencies:** Elevation data API or dataset
 - **Files to modify:** `app/planner/page.tsx`, new chart component
 
-#### 4. Bottom Navigation (Priority: MEDIUM)
+#### 3. Bottom Navigation (Priority: MEDIUM)
 **Issue:** Mobile lacks persistent navigation
 - **Current:** Standard header only
 - **Required:** Sticky bottom nav bar with key actions
 - **Estimated Effort:** 2-3 hours
 - **Files to modify:** `app/layout.tsx`
 
-#### 5. Marker Clustering ✅ COMPLETED (2026-04-02)
+#### 4. Marker Clustering ✅ COMPLETED (2026-04-02)
 **Status:** Implemented with custom cluster styling
 - **Implementation:** leaflet.markercluster integration
 - **Features:** Dynamic cluster sizes, gradient styling, spiderfy behavior
@@ -314,21 +329,21 @@ Flow stages:
 
 ## Next Steps (Priority Order)
 
-### Phase 1: Critical UX (Week 1)
-1. ~~Implement marker differentiation by package tier~~ ✅ COMPLETED (2026-04-02)
-2. ~~Implement marker clustering for performance~~ ✅ COMPLETED (2026-04-02)
-3. Add mobile bottom sheet for list view
+### Phase 1: Critical UX ✅ COMPLETED (2026-04-02)
+1. ~~Implement marker differentiation by package tier~~ ✅ COMPLETED
+2. ~~Implement marker clustering for performance~~ ✅ COMPLETED
+3. ~~Add mobile bottom sheet for list view~~ ✅ COMPLETED
 
-### Phase 2: Enhanced Features (Week 2)
-4. Add bottom navigation for mobile
-5. Integrate Google AdSense (pending account approval)
-6. Add floating "Quick Planner" button on mobile
+### Phase 2: Enhanced Features (Next Priority)
+1. Add bottom navigation for mobile
+2. Integrate Google AdSense (pending account approval)
+3. Add floating "Quick Planner" button on mobile
 
-### Phase 3: Advanced Features (Week 3-4)
-7. Implement elevation profile visualization
-8. Migrate to persistent database (PostgreSQL)
-9. Add image optimization pipeline
-10. Implement advanced caching strategy
+### Phase 3: Advanced Features
+4. Implement elevation profile visualization
+5. Migrate to persistent database (PostgreSQL) - Already completed in Phase 3
+6. Add image optimization pipeline
+7. Implement advanced caching strategy
 
 ---
 
@@ -381,6 +396,9 @@ Flow stages:
 | 2026-04-01 | 1.0 | Priority order and estimates added |
 | 2026-04-02 | 1.1 | Marker differentiation and clustering implemented |
 | 2026-04-02 | 1.1 | Overall implementation status updated to 90% |
+| 2026-04-02 | 1.2 | Mobile bottom sheet with swipe gestures implemented |
+| 2026-04-02 | 1.2 | Phase 1 completed - status updated to 95% |
+| 2026-04-02 | 1.2 | Created BottomSheet and DiscoveryMapSection components |
 
 ---
 
