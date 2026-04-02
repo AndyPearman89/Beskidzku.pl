@@ -7,7 +7,7 @@ interface RouteStop {
   name: string;
   lat: number;
   lng: number;
-  type: string;
+  type: 'parking' | 'attraction' | 'peak' | 'restaurant' | 'accommodation';
   description?: string;
 }
 
