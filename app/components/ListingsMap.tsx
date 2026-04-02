@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { Map as LeafletMap } from "leaflet";
+import type { Map as LeafletMap, MarkerClusterGroup } from "leaflet";
 import type { Listing } from "@/core/api/listings";
 
 interface Props {
@@ -29,12 +29,18 @@ export default function ListingsMap({
 }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<LeafletMap | null>(null);
+  const clusterGroupRef = useRef<MarkerClusterGroup | null>(null);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    // Dynamically import Leaflet to avoid SSR issues
-    import("leaflet").then((L) => {
+    // Dynamically import Leaflet and markercluster to avoid SSR issues
+    Promise.all([
+      import("leaflet"),
+      import("leaflet.markercluster"),
+      import("leaflet.markercluster/dist/MarkerCluster.css"),
+      import("leaflet.markercluster/dist/MarkerCluster.Default.css"),
+    ]).then(([L]) => {
       // Fix default marker icon paths broken by webpack bundling
       (L.Icon.Default.prototype as L.Icon.Default & { _getIconUrl?: unknown })._getIconUrl = undefined;
       L.Icon.Default.mergeOptions({
@@ -50,6 +56,49 @@ export default function ListingsMap({
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 18,
       }).addTo(map);
+
+      // Create marker cluster group with custom styling
+      const markerCluster = L.markerClusterGroup({
+        maxClusterRadius: 60,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        iconCreateFunction: (cluster) => {
+          const count = cluster.getChildCount();
+          let sizeClass = 'small';
+          let size = 40;
+
+          if (count >= 100) {
+            sizeClass = 'large';
+            size = 60;
+          } else if (count >= 10) {
+            sizeClass = 'medium';
+            size = 50;
+          }
+
+          return L.divIcon({
+            html: `<div style="
+              background: linear-gradient(135deg, #e30613 0%, #c00511 100%);
+              width: ${size}px;
+              height: ${size}px;
+              border-radius: 50%;
+              border: 4px solid white;
+              box-shadow: 0 6px 16px rgba(227, 6, 19, 0.4);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-weight: bold;
+              font-size: ${size / 2.5}px;
+              font-family: system-ui, -apple-system, sans-serif;
+            ">${count}</div>`,
+            className: `marker-cluster-${sizeClass}`,
+            iconSize: [size, size],
+          });
+        },
+      });
+
+      clusterGroupRef.current = markerCluster;
 
       listings.forEach((listing) => {
         if (!listing.lat || !listing.lng) return;
@@ -83,7 +132,6 @@ export default function ListingsMap({
             : `<span style="background:#6b7280;color:white;font-size:10px;padding:2px 6px;border-radius:999px;font-weight:700">FREE</span>`;
 
         L.marker([listing.lat, listing.lng], { icon })
-          .addTo(map)
           .bindPopup(
             `<div style="min-width:180px;font-family:system-ui,sans-serif">
               <div style="display:flex;align-items:start;justify-content:space-between;gap:8px;margin-bottom:4px">
@@ -97,11 +145,19 @@ export default function ListingsMap({
               </a>
             </div>`,
             { maxWidth: 260 }
-          );
+          )
+          .addTo(markerCluster);
       });
+
+      // Add the cluster group to the map
+      map.addLayer(markerCluster);
     });
 
     return () => {
+      if (clusterGroupRef.current) {
+        clusterGroupRef.current.clearLayers();
+        clusterGroupRef.current = null;
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
